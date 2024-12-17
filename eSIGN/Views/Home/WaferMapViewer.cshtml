@@ -1,0 +1,1288 @@
+﻿@{
+    ViewData["Title"] = "Home page";
+}
+@section Styles {
+    <style>
+        #tbWaferMap {
+            background-color: white;
+            overflow: auto;
+            max-height: 100vh;
+            max-width: 100vw;
+        }
+
+        #iconFullTableMap {
+            float: right;
+            cursor: pointer;
+            margin-left: 15px;
+            color: #9f9f9f;
+        }
+
+        #iconDrawMapRaw, #iconEraserMapRaw {
+            float: right;
+            cursor: pointer;
+            margin-left: 15px;
+            color: #9f9f9f;
+            display: none;
+        }
+
+            #iconFullTableMap:hover, #iconDrawMapRaw:hover, #iconEraserMapRaw:hover {
+                color: #000000 !important;
+            }
+    </style>
+
+}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Dashboard</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <!-- ./col -->
+                <div>
+                    <span style="float: left" id="card-footer-left" class="col-7">
+                        <div class="form-group row">
+                            <label for="profile" class="col-2 col-form-label">Profile</label>
+                            <div class="col-3">
+                                <select class="form-control select2bs4" id="profile" onchange="selectProfile(this)">
+                                    <option value="-1">--None selected--</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <div class="custom-file" id="divUploadFile">
+                                    <input type="file" class="custom-file-input" id="uploadFile" multiple disabled>
+                                    <label class="custom-file-label" for="uploadFile" disabled>Choose file</label>
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <button class="btn btn-info" id="btnUploadFile" disabled onclick="uploadFile()">Upload</button>
+                            </div>
+                        </div>
+                    </span>
+                    <span style="float: right" id="card-footer-right">
+                        <button class="btn btn-success" data-toggle="modal" data-target="#modal-default">New Profile</button>
+                        <button class="btn btn-danger" onclick="deleteProfile()" id="btnDelete">Delete</button>
+                        <!--<button class="btn btn-primary" onclick="signApplication(2, 0)">Research</button>
+                        <button class="btn btn-secondary" onclick="signApplication(7, 0)">Develop</button>
+                        <button class="btn btn-info" onclick="signApplication(5, 0)">Publish</button>-->
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-pills">
+                                <li class="nav-item"><a class="nav-link" href="javascript:void(0)">Count position</a></li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="countPosition">
+                                    <table class="table table-bordered" id="">
+                                        <thead id="">
+                                            <tr id="">
+                                                <th style="background-color:#ffe0ee; width: 10%">1</th>
+                                                <th style="background-color:#fcd358; width: 10%">2</th>
+                                                <th style="background-color:#e8a66f; width: 10%">3</th>
+                                                <th style="background-color:#f24a97; width: 10%">4</th>
+                                                <th style="background-color:#f87910; width: 10%">5</th>
+                                                <th style="background-color:#f61d07; width: 10%">>=6</th>
+                                                <th style="background-color:#007bff; width: 10%">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="">
+                                            <tr>
+                                                <td id="position1">0</td>
+                                                <td id="position2">0</td>
+                                                <td id="position3">0</td>
+                                                <td id="position4">0</td>
+                                                <td id="position5">0</td>
+                                                <td id="position6">0</td>
+                                                <td id="totalPosition">0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-pills" id="ulFrame">
+                                <li class="nav-item"><a class="nav-link active" href="#allFrame" data-toggle="tab">All Frames</a></li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="contentFrame">
+                                <div class="tab-pane active" id="allFrame">
+                                    <table class="table table-bordered tab-pane active">
+                                        <thead id="">
+                                            <tr id="">
+                                                <th>Device</th>
+                                                <th>Frame ID</th>
+                                                <th>Unit Qty</th>
+                                                <th>Lot</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyAllFrame">
+                                            <tr>
+                                                <td>None selected</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-2">
+                    <div class="card card-default">
+                        <div class="card-header">
+                            <h3 class="card-title">Unit ID</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <textarea class="form-control" rows="3" placeholder="Enter ..." id="areaUnit"></textarea>
+                            </div>
+                            <select multiple class="form-control" style="height: 250px;" id="selectUnit">
+                            </select>
+                            <!-- /.form-group -->
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-secondary btn-sm" onclick="getXYUnit('remove')">Remove</button>
+                            <button type="submit" class="btn btn-info btn-sm float-right" onclick="getXYUnit('search')">Search</button>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-10">
+                    <div class="card" style="overflow-x: auto; white-space: nowrap">
+                        <div class="card-header">
+                            <h3 class="card-title">Wafer Map</h3>
+                            <i class="fas fa-expand-arrows-alt" onclick="fullScreenWaferMap()" id="iconFullTableMap"></i>
+                            <i class="fas fa-eraser" onclick="eraserWaferMapRaw()" id="iconEraserMapRaw"></i>
+                            <i class="fas fa-pencil-alt" onclick="drawWaferMapRaw()" id="iconDrawMapRaw"></i>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered" id="tbWaferMap">
+                                <thead id="thead">
+                                    <tr id="trhead">
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody">
+                                </tbody>
+
+                            </table>
+                            <div><i class="fa fa-save" style="float:right; cursor:pointer; margin-top:10px; display:none;" onclick="saveWaferMapRaw()" id="iconSaveMapRaw"> Save</i></div>
+                        </div>
+                    </div>
+                    <div id="example">
+                    </div>
+                    <div id="modal-all">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal-default">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">New Profile</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="profileName"><span style="color: red">*</span> Profile name</label>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="profileName" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="lotRow"><span style="color: red">*</span> Lot row</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="lotRow" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="frameIdRow"><span style="color: red">*</span> Frame Id Column</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="frameIdRow" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="rowStart"><span style="color: red">*</span> Row start</label>
+                                <div class="form-group">
+                                    <input type="number" class="form-control" id="rowStart" min="0" value="0" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="x"><span style="color: red">*</span> Max X</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="x" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="columnNumberX"><span style="color: red">*</span> Column Number X</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="columnNumberX" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="y"><span style="color: red">*</span> Max Y</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="y" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="columnNumberY"><span style="color: red">*</span> Column Number Y</label>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" id="columnNumberY" min="0" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="createProfile()">Create</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+@section Scripts {
+    <script>
+        $(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2()
+
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
+            bsCustomFileInput.init();
+            $('.duallistbox').bootstrapDualListbox()
+        })
+
+        let token = ''
+        $(document).ready(function () {
+            getProfile()
+            //$('#loadIMG').removeClass('d-none')
+        });
+
+        let idProfile;
+        let frameId = null;
+        let listCountUnit;
+        function getProfile() {
+            $('#loadIMG').removeClass('d-none')
+            $.ajax({
+                url: '/Home/GetProfile',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {},
+                success: function (res) {
+                    let data = res.data
+                    for (let i = 0; i < data.length; i++) {
+                        let opt = document.createElement('option');
+                        opt.value = data[i].id;
+                        opt.innerHTML = data[i].profile_name;
+                        opt.setAttribute('lot_row', data[i].lot_row)
+                        opt.setAttribute('frame_id_row', data[i].frame_id_row)
+                        opt.setAttribute('row_start', data[i].row_start)
+                        opt.setAttribute('column_number_x', data[i].column_number_x)
+                        opt.setAttribute('column_number_y', data[i].column_number_y)
+                        document.getElementById('profile').appendChild(opt);
+                        if (i == 0) {
+                            document.getElementById('profile').selectedIndex = i
+                        }
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+            $('#loadIMG').addClass('d-none')
+
+        }
+
+        function selectProfile(sel) {
+            idProfile = sel.value
+            resetData()
+            document.getElementById('iconDrawMapRaw').style.display = 'none'
+            document.getElementById('iconEraserMapRaw').style.display = 'none'
+            document.getElementById('iconDrawMapRaw').style.color = '#9f9f9f'
+            document.getElementById('iconEraserMapRaw').style.color = '#9f9f9f'
+            document.getElementById('iconSaveMapRaw').style.display = 'none'
+            if(sel.value == -1){
+                $('#uploadFile').attr('disabled', 'disabled')
+                $('#btnUploadFile').attr('disabled', 'disabled')
+                $('#trhead').html('')
+                $('#tbody').html('')
+                $('#ulFrame').html(`<li class="nav-item"><a class="nav-link active" href="#allFrame" data-toggle="tab" >All Frames</a></li>`)
+                $('#contentFrame').html(`<div class="tab-pane active" id="allFrame">
+                                            <table class="table table-bordered tab-pane active">
+                                                <thead id="">
+                                                    <tr id="">
+                                                        <th>Device</th>
+                                                        <th>Frame ID</th>
+                                                        <th>Unit Qty</th>
+                                                        <th>Lot</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyAllFrame">
+                                                    <tr>
+                                                        <td>None selected</td>
+                                                        <td>&nbsp;</td>
+                                                        <td>&nbsp;</td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>`)
+                $('#selectUnit').html('')
+
+            }
+            else {
+                $('#uploadFile').removeAttr('disabled')
+                $('#btnUploadFile').removeAttr('disabled')
+                getTotalFrame(sel.value)
+                getUnitByFrameId(sel.value, null)
+                getWaferMap(sel.value)
+            }
+        }
+
+        function getTotalFrame(id) {
+            $.ajax({
+                url: '/Home/GetTotalFrame',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: { id: id },
+                success: function (res) {
+                    let data = res.data
+                    let htmlContentFrame = ''
+                    for (let i = 0; i < data.length; i++) {
+                        htmlContentFrame = `<div class="tab-pane active" id="allFrame">
+                                                <table class="table table-bordered tab-pane active">
+                                                    <thead id="">
+                                                        <tr id="">
+                                                            <th>Device</th>
+                                                            <th>Frame ID</th>
+                                                            <th>Unit Qty</th>
+                                                            <th>Lot</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tbodyAllFrame">
+                                                        <tr>
+                                                            <td>${data[i].profile_name}</td>
+                                                            <td>All Frames</td>
+                                                            <td>${data[i].unit_qty}</td>
+                                                            <td>All Lots</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>`
+
+                    }
+                    $('#ulFrame').html(`<li class="nav-item"><a class="nav-link active" href="#allFrame" data-toggle="tab" onclick="getUnitByFrameId(${id}, null); getWaferMapRaw(${id}, null)">All Frames</a></li>`)
+                    $('#contentFrame').html(htmlContentFrame)
+                    getAllFrame(id)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function getAllFrame(id) {
+            $.ajax({
+                url: '/Home/GetAllFrame',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: { id: id },
+                success: function (res) {
+                    let data = res.data
+                    for (let i = 0; i < data.length; i++) {
+                        //Tạo li header của tab
+                        // Tạo phần tử <li> mới
+                        var newListItem = document.createElement("li");
+                        newListItem.className = "nav-item";
+
+                        // Tạo phần tử <a> mới và thêm vào <li>
+                        var newLink = document.createElement("a");
+                        newLink.className = "nav-link";
+                        newLink.href = `#frame${i}`;
+                        newLink.setAttribute("data-toggle", "tab");
+                        newLink.textContent = data[i].frame_id;
+                        newLink.setAttribute("onclick", `getUnitByFrameId(${id}, "${data[i].frame_id}"); getWaferMapRaw(${id}, "${data[i].frame_id}")`);
+
+                        newListItem.appendChild(newLink);
+
+                        // Thêm <li> mới vào <ul> dưới thẻ "All Frames"
+                        var ulFrame = document.getElementById("ulFrame");
+                        ulFrame.appendChild(newListItem);
+                        //End header tab
+
+                        //Tạo content table của tab
+                        // Tạo phần tử <div> mới
+                        var newDiv = document.createElement("div");
+                        newDiv.className = "tab-pane";
+                        newDiv.id = `frame${i}`;
+
+                        // Tạo nội dung HTML cho <div> mới
+                        newDiv.innerHTML = `
+                            <table class="table table-bordered tab-pane active">
+                                <thead id="">
+                                    <tr id="">
+                                        <th>Device</th>
+                                        <th>Frame ID</th>
+                                        <th>Unit Qty</th>
+                                        <th>Lot</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="">
+                                    <tr>
+                                        <td>${data[i].profile_name}</td>
+                                        <td>${data[i].frame_id}</td>
+                                        <td>${data[i].unit_qty}</td>
+                                        <td>${data[i].lot_value}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+
+                        // Thêm <div> mới vào <div> hiện tại
+                        var contentFrame = document.getElementById("contentFrame");
+                        contentFrame.appendChild(newDiv);
+
+                    }
+
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function getUnitByFrameId(id, frame_id) {
+            $('#selectUnit').html('')
+            resetData()
+            frameId = frame_id
+            $.ajax({
+                url: '/Home/GetUnitByFrameId',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    id: id,
+                    frame_id: frame_id
+                },
+                success: function (res) {
+                    let data = res.data
+                    if (data.length >0 && data[0].unit_id.length >= 26) {
+                        document.getElementById("selectUnit").style.fontSize = "0.75rem"
+                    } else {
+                        document.getElementById("selectUnit").style.fontSize = "1rem"
+                    }
+                    for (let i = 0; i < data.length; i++) {
+                        let opt = document.createElement('option');
+                        opt.value = data[i].id;
+                        opt.innerHTML = data[i].unit_id;
+                        document.getElementById("selectUnit").appendChild(opt);
+
+                    }
+
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function getWaferMap(id) {
+            $.ajax({
+                url: '/Home/GetWaferMap',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {id : id},
+                success: function (res) {
+                    let data = res.data
+                    // Vẽ trục X
+                    let htmlTrHead = '<th style="padding: 0.1rem; ">#</th>'
+                    for (let i = 0; i <= data[0].x; i++) {
+                        if (i <= 9) {
+                            htmlTrHead += `<th style="padding: 0.1rem; ">0${i}</th>`
+                        } else {
+                            htmlTrHead += `<th style="padding: 0.1rem; ">${i}</th>`
+                        }
+                    }
+                    $('#trhead').html(htmlTrHead)
+
+                    //Vẽ trục Y
+                    let htmlTBody = ''
+                    for (let y = 0; y <= data[0].y; y++) {
+                        htmlTBody += `<tr>`
+                        if (y <= 9) {
+                            htmlTBody += `<td style="padding: 0.1rem"><b>0${y}</b></td>`
+                        } else {
+                            htmlTBody += `<td style="padding: 0.1rem"><b>${y}</b></td>`
+                        }
+                        //Vẽ từng cell
+                        for (let x = 0; x <= data[0].x; x++) {
+                            htmlTBody += `<td id="${x}and${y}" x="${x}" y="${y}" style="padding: 0.1rem" class="cellWaferMap" data-toggle="tooltip" data-html="true" title="" ></td>`
+
+                        }
+                        htmlTBody += `</tr>`
+                    }
+                    $('#tbody').html(htmlTBody)
+                    getWaferMapRaw(id, null)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function getWaferMapValue(idWaferMap, frameId) {
+            $.ajax({
+                url: '/Home/GetWaferMapValue',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    idWaferMap: idWaferMap,
+                    frameId: frameId
+                },
+                success: function (res) {
+                    let data = res.data
+                    for (let i = 0; i < data.length; i++) {
+                        let stringUnit ='';
+                        let valueX = data[i].value_x, valueY = data[i].value_y;
+                        let idValue = valueX + 'and' + valueY
+                        document.getElementById(idValue).style.backgroundColor = '#c3f9cf'
+                        document.getElementById(idValue).classList.add('cellCheckMap')
+                        if (document.getElementById(idValue).getAttribute("x") == valueX && document.getElementById(idValue).getAttribute("y") == valueY) {
+                            stringUnit += document.getElementById(idValue).getAttribute("unit-id") + "; " + data[i].unit_id
+                            document.getElementById(idValue).setAttribute("unit-id", stringUnit)
+                        } else {
+                            document.getElementById(idValue).setAttribute("unit-id", data[i].unit_id)
+                            stringUnit = ''
+                        }
+                        document.getElementById(idValue).setAttribute("x", valueX)
+                        document.getElementById(idValue).setAttribute("y", valueY)
+                        document.getElementById(idValue).setAttribute("title", `X: ${valueX}, Y: ${valueY}, Unit ID: ${document.getElementById(idValue).getAttribute("unit-id")}`)
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+        function createProfile() {
+            if (!$('#profileName').val()) {
+                alert('Profile name is required!');
+                return false;
+            }
+            if (!$('#rowStart').val()) {
+                alert('Row start is required!');
+                return false;
+            }
+            if (!$('#lotRow').val()) {
+                alert('Lot row is required!');
+                return false;
+            }
+            if (!$('#frameIdRow').val()) {
+                alert('Frame Id row is required!');
+                return false;
+            }
+            if (!$('#x').val()) {
+                alert('Max X is required!');
+                return false;
+            }
+            if (!$('#y').val()) {
+                alert('Max Y is required!');
+                return false;
+            }
+            if (!$('#columnNumberX').val()) {
+                alert('Column number X is required!');
+                return false;
+            }
+            if (!$('#columnNumberY').val()) {
+                alert('Column number Y is required!');
+                return false;
+            }
+
+            let data = {
+                "profileName": $('#profileName').val(),
+                "lotRow": $('#lotRow').val(),
+                "frameIdRow": $('#frameIdRow').val(),
+                "rowStart": $('#rowStart').val(),
+                "x": $('#x').val(),
+                "y": $('#y').val(),
+                "columnNumberX": $('#columnNumberX').val(),
+                "columnNumberY": $('#columnNumberY').val(),
+            }
+            $.ajax({
+                url: '/Home/CreateProfile',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: data,
+                //contentType: false,
+                //processData: false,
+                success: function (res) {
+                    if (res.statusCode == "FAIL") {
+                        alert(res.message)
+                    } else {
+                        alert(res.message)
+                        window.location.replace('/wafer-map-viewer')
+                    }
+
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function deleteProfile() {
+            let idWaferMap = document.getElementById("profile").value
+            if (idWaferMap == -1) {
+                alert('You do not choose profile yet');
+                return false;
+            }
+            if (confirm('Do you want to delete profile?')) {
+                $.ajax({
+                    url: '/Home/DeleteProfile',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + getCookie('auth_token')
+                    },
+                    data: { id: idWaferMap },
+                    //contentType: false,
+                    //processData: false,
+                    success: function (res) {
+                        if (res.statusCode == "FAIL") {
+                            alert(res.message)
+                        } else {
+                            alert(res.message)
+                            window.location.replace('/wafer-map-viewer')
+                        }
+
+                    },
+                    error: function (err) {
+                        if (err.status == 401) {
+                            logout();
+                        }
+                        else {
+                            alert(err.responseJSON.message)
+                        }
+                    }
+                });
+            }
+        }
+        function uploadFile() {
+            let formData = new FormData();
+            var files = document.getElementById("uploadFile").files
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            let selectedProfile = document.getElementById('profile');
+            let selectedOption = selectedProfile.options[selectedProfile.selectedIndex];
+            let idWaferMap = selectedOption.value;
+            let lotRow = selectedOption.getAttribute('lot_row');
+            let frameIdRow = selectedOption.getAttribute('frame_id_row');
+            let rowStart = selectedOption.getAttribute('row_start');
+            let columnNumberX = selectedOption.getAttribute('column_number_x');
+            let columnNumberY = selectedOption.getAttribute('column_number_y');
+
+            formData.append('lotRow', lotRow);
+            formData.append('frameIdRow', frameIdRow);
+            formData.append('rowStart', rowStart);
+            formData.append('columnNumberX', columnNumberX);
+            formData.append('columnNumberY', columnNumberY);
+            formData.append('idWaferMap', idWaferMap);
+
+            $.ajax({
+                url: '/Home/UploadFile',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (res) {
+                    if (res.statusCode == "FAIL") {
+                        alert(res.message)
+                    } else {
+                        alert(res.message)
+                        resetData()
+                        getTotalFrame(idWaferMap)
+                        getUnitByFrameId(idWaferMap, null)
+                        getWaferMap(idWaferMap)
+                    }
+
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function getXYUnit(actionUnit) {
+            const select = document.getElementById("selectUnit");
+            const options = select.options;
+            let selectedUnit = []
+            let stringUnit = $('#areaUnit').val()
+            let listAreaUnit = stringUnit.split(";")
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].selected) {
+                    if (actionUnit == "search") {
+                        // Add to listCount
+
+                        if (!listCountUnit.includes(options[i].text)) {
+                            listCountUnit.push(options[i].text)
+                            options[i].classList.add('selectedUnit');
+                        }
+                    }
+                    if (actionUnit == "remove") {
+
+
+                        //remove from listCount
+                        const index = listCountUnit.indexOf(options[i].text);
+                        if (index > -1) { // only splice array when item is found
+                            listCountUnit.splice(index, 1); // 2nd parameter means remove one item only
+                            options[i].classList.remove('selectedUnit');
+                        }
+                    }
+                    selectedUnit.push(options[i].text)
+                }
+                if (actionUnit == "search") {
+                    listAreaUnit.forEach(element => {
+                        if (options[i].text == element) {
+                            options[i].classList.add('selectedUnit');
+                        }
+                    });
+                }
+                if (actionUnit == "remove") {
+                    listAreaUnit.forEach(element => {
+                        if (options[i].text == element) {
+                            options[i].classList.remove('selectedUnit');
+                        }
+                    });
+                }
+
+            }
+
+
+            // Vẽ lên Wafer map
+            //drawWaferMap(actionUnit, selectedUnit)
+
+            //Tính toán count position
+            if (actionUnit == "search") {
+                listAreaUnit.forEach(element => {
+                    if (!listCountUnit.includes(element)) {
+                        listCountUnit.push(element);
+                    }
+                });
+            }
+            if (actionUnit == "remove") {
+                listAreaUnit.forEach(element => {
+                    const ind = listCountUnit.indexOf(element);
+                    if (ind > -1) {
+                        listCountUnit.splice(ind, 1); // Xóa phần tử tại vị trí index
+                    }
+                });
+            }
+            countPosition(actionUnit, listCountUnit)
+        }
+
+
+        function countPosition(actionUnit, listUnit) {
+            let elements = document.querySelectorAll('.cellCheckMap');
+            elements.forEach(function (element) {
+                element.style.backgroundColor = '#c3f9cf';
+                element.innerHTML = '';
+            });
+            let dataUnit = {
+                idWaferMap: idProfile * 1,
+                frameId: frameId,
+                listUnit: listUnit
+            }
+            let stringUnit = listUnit.join(";")
+            console.log(JSON.stringify(dataUnit))
+            //stringUnit += $('#areaUnit').val()
+
+            $.ajax({
+                url: '/Home/CountPositionUnit',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: JSON.stringify(dataUnit),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (res) {
+                    let data = res.data
+                    let position1 = 0, position2 = 0, position3 = 0, position4 = 0, position5 = 0, position6 = 0, totalPosition = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        let idValue = data[i].value_x + 'and' + data[i].value_y
+                        $(`#${idValue}`).html(data[i].unit_qty)
+                        if (data[i].unit_qty == 1) { position1++; document.getElementById(idValue).style.backgroundColor = '#ffe0ee'; }
+                        if (data[i].unit_qty == 2) { position2++; document.getElementById(idValue).style.backgroundColor = '#fcd358'; }
+                        if (data[i].unit_qty == 3) { position3++; document.getElementById(idValue).style.backgroundColor = '#e8a66f'; }
+                        if (data[i].unit_qty == 4) { position4++; document.getElementById(idValue).style.backgroundColor = '#f24a97'; }
+                        if (data[i].unit_qty == 5) { position5++; document.getElementById(idValue).style.backgroundColor = '#f87910'; }
+                        if (data[i].unit_qty >= 6) { position6++; document.getElementById(idValue).style.backgroundColor = '#f61d07'; }
+
+                    }
+                    $('#position1').html(position1)
+                    $('#position2').html(position2)
+                    $('#position3').html(position3)
+                    $('#position4').html(position4)
+                    $('#position5').html(position5)
+                    $('#position6').html(position6)
+
+                    totalPosition = position1 + position2 + position3 + position4 + position5 + position6
+                    $('#totalPosition').html(totalPosition)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function resetData(){
+            listCountUnit = []
+            $('#position1').html(0)
+            $('#position2').html(0)
+            $('#position3').html(0)
+            $('#position4').html(0)
+            $('#position5').html(0)
+            $('#position6').html(0)
+            $('#totalPosition').html(0)
+            //$('#areaUnit').val('')
+        }
+
+        function fullScreenWaferMap() {
+            let waferMap = document.getElementById('tbWaferMap'); // Giả sử id của wafer map là 'tbWaferMap'
+            if (waferMap.requestFullscreen) {
+                waferMap.requestFullscreen();
+            } else if (waferMap.mozRequestFullScreen) { // Firefox
+                waferMap.mozRequestFullScreen();
+            } else if (waferMap.webkitRequestFullscreen) { // Chrome, Safari và Opera
+                waferMap.webkitRequestFullscreen();
+            } else if (waferMap.msRequestFullscreen) { // IE/Edge
+                waferMap.msRequestFullscreen();
+            }
+        }
+
+        //Draw wafer map raw
+        let startX, startY, endX, endY;
+        function startSelection(event) {
+            event.preventDefault();
+            startX = parseInt(event.target.getAttribute('x'));
+            startY = parseInt(event.target.getAttribute('y'));
+            isMouseDown = true;
+        }
+
+        function selectCell(event) {
+            event.preventDefault();
+            if (isMouseDown) {
+                const cells = document.querySelectorAll('td');
+                cells.forEach(cell => {
+                    if (!cell.classList.contains('cellMapRaw')) {
+                        cell.style.backgroundColor = "";
+                    } else {
+                        cell.style.backgroundColor = "#c3c0c0";
+                    }
+                });
+
+                endX = parseInt(event.target.getAttribute('x'));
+                endY = parseInt(event.target.getAttribute('y'));
+                const minX = Math.min(startX, endX);
+                const maxX = Math.max(startX, endX);
+                const minY = Math.min(startY, endY);
+                const maxY = Math.max(startY, endY);
+
+                for (let x = minX; x <= maxX; x++) {
+                    for (let y = minY; y <= maxY; y++) {
+                        const cell = document.getElementById(`${x}and${y}`);
+                        if (cell) {
+                            cell.style.backgroundColor = "#7bd0ff"
+                        }
+                    }
+                }
+            }
+        }
+
+        function endSelection(event) {
+            event.preventDefault();
+            endX = parseInt(event.target.getAttribute('x'));
+            endY = parseInt(event.target.getAttribute('y'));
+            highlightCells();
+            isMouseDown = false;
+        }
+
+        function highlightCells() {
+            const minX = Math.min(startX, endX);
+            const maxX = Math.max(startX, endX);
+            const minY = Math.min(startY, endY);
+            const maxY = Math.max(startY, endY);
+
+            for (let x = minX; x <= maxX; x++) {
+                for (let y = minY; y <= maxY; y++) {
+                    const cell = document.getElementById(`${x}and${y}`);
+                    if (cell) {
+                        cell.style.backgroundColor = "#c3c0c0"
+                        cell.classList.add('cellMapRaw')
+                    }
+                }
+            }
+        }
+
+        //Eraser wafer map raw
+        // function startErasing(event) {
+        //     event.preventDefault();
+        //     startX = parseInt(event.target.getAttribute('x'));
+        //     startY = parseInt(event.target.getAttribute('y'));
+        //     isMouseDown = true;
+        // }
+
+        // function eraseCell(event) {
+        //     event.preventDefault();
+        //     if (isMouseDown) {
+        //         endX = parseInt(event.target.getAttribute('x'));
+        //         endY = parseInt(event.target.getAttribute('y'));
+        //         const minX = Math.min(startX, endX);
+        //         const maxX = Math.max(startX, endX);
+        //         const minY = Math.min(startY, endY);
+        //         const maxY = Math.max(startY, endY);
+
+        //         for (let x = minX; x <= maxX; x++) {
+        //             for (let y = minY; y <= maxY; y++) {
+        //                 const cell = document.getElementById(`${x}and${y}`);
+        //                 if (cell) {
+        //                     cell.style.backgroundColor = "";
+        //                     cell.classList.remove('cellMapRaw');
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // function endErasing(event) {
+        //     event.preventDefault();
+        //     endX = parseInt(event.target.getAttribute('x'));
+        //     endY = parseInt(event.target.getAttribute('y'));
+        //     isMouseDown = false;
+        // }
+
+
+        //Eraser wafer map raw
+        function startErasing(event) {
+            event.preventDefault();
+            startX = parseInt(event.target.getAttribute('x'));
+            startY = parseInt(event.target.getAttribute('y'));
+            isMouseDown = true;
+        }
+
+        function eraseCell(event) {
+            event.preventDefault();
+            if (isMouseDown) {
+                const cells = document.querySelectorAll('td');
+                cells.forEach(cell => {
+                    if (!cell.classList.contains('cellMapRaw')) {
+                        cell.style.backgroundColor = "";
+                    } else {
+                        cell.style.backgroundColor = "#c3c0c0";
+                    }
+                });
+
+                endX = parseInt(event.target.getAttribute('x'));
+                endY = parseInt(event.target.getAttribute('y'));
+                const minX = Math.min(startX, endX);
+                const maxX = Math.max(startX, endX);
+                const minY = Math.min(startY, endY);
+                const maxY = Math.max(startY, endY);
+
+                for (let x = minX; x <= maxX; x++) {
+                    for (let y = minY; y <= maxY; y++) {
+                        const cell = document.getElementById(`${x}and${y}`);
+                        if (cell) {
+                            cell.style.backgroundColor = "#ffb6b6";
+                        }
+                    }
+                }
+            }
+        }
+
+        function endErasing(event) {
+            event.preventDefault();
+            endX = parseInt(event.target.getAttribute('x'));
+            endY = parseInt(event.target.getAttribute('y'));
+            clearCells();
+            isMouseDown = false;
+        }
+
+        function clearCells() {
+            const minX = Math.min(startX, endX);
+            const maxX = Math.max(startX, endX);
+            const minY = Math.min(startY, endY);
+            const maxY = Math.max(startY, endY);
+
+            for (let x = minX; x <= maxX; x++) {
+                for (let y = minY; y <= maxY; y++) {
+                    const cell = document.getElementById(`${x}and${y}`);
+                    if (cell) {
+                        cell.style.backgroundColor = "";
+                        cell.classList.remove('cellMapRaw');
+                    }
+                }
+            }
+        }
+
+        document.body.onmouseup = function () {
+            isMouseDown = false;
+        };
+
+        function getWaferMapRaw(id, frameId) {
+            //Xóa background-color và các attribute từng cell
+            let elements = document.querySelectorAll('.cellWaferMap');
+            elements.forEach(function (element) {
+                if (element.classList.contains('cellCheckMap')) {
+                    element.classList.remove('cellCheckMap');
+                }
+                element.style.backgroundColor = '';
+                //element.setAttribute('x', '');
+                //element.setAttribute('y', '');
+                element.setAttribute('title', '');
+                element.setAttribute('unit-id', '');
+                element.innerHTML = '';
+            });
+
+            $.ajax({
+                url: '/Home/GetWaferMapRaw',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    idWaferMap: idProfile,
+                },
+                success: function (res) {
+                    let data = res.data
+                    if (data.length == 0) {
+                        document.getElementById('iconDrawMapRaw').style.display = 'block'
+                        document.getElementById('iconEraserMapRaw').style.display = 'block'
+                        document.getElementById('iconSaveMapRaw').style.display = 'block'
+
+                    }
+                    else {
+                        document.getElementById('iconDrawMapRaw').style.display = 'none'
+                        document.getElementById('iconEraserMapRaw').style.display = 'none'
+                        document.getElementById('iconSaveMapRaw').style.display = 'none'
+                        for (let i = 0; i < data.length; i++) {
+                            let valueX = data[i].x_raw, valueY = data[i].y_raw;
+                            let idValue = valueX + 'and' + valueY
+                            document.getElementById(idValue).style.backgroundColor = '#c3c0c0'
+                        }
+                    }
+                    getWaferMapValue(idProfile, frameId)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+        }
+
+        function drawWaferMapRaw() {
+            document.getElementById('iconDrawMapRaw').style.color = '#000000'
+            document.getElementById('iconEraserMapRaw').style.color = '#9f9f9f'
+
+            let elements = document.querySelectorAll('.cellWaferMap');
+            elements.forEach(function (element) {
+                element.setAttribute("onmousedown", "startSelection(event)")
+                element.setAttribute("onmousemove", "selectCell(event)")
+                element.setAttribute("onmouseup", "endSelection(event)")
+            });
+        }
+
+        function eraserWaferMapRaw() {
+            document.getElementById('iconDrawMapRaw').style.color = '#9f9f9f'
+            document.getElementById('iconEraserMapRaw').style.color = '#000000'
+
+            let elements = document.querySelectorAll('td');
+            elements.forEach(function (element) {
+                element.setAttribute("onmousedown", "startErasing(event)");
+                element.setAttribute("onmousemove", "eraseCell(event)");
+                element.setAttribute("onmouseup", "endErasing(event)");
+            });
+        }
+
+        function saveWaferMapRaw() {
+            if (confirm('Do you want to save map?')) {
+                let elements = document.querySelectorAll('.cellMapRaw');
+                let listMapRaw = [];
+                elements.forEach(function (element) {
+                    let raw = {
+                        id_wafer_map: idProfile*1,
+                        x_raw: element.getAttribute("x")*1,
+                        y_raw: element.getAttribute("y")*1
+                    }
+                    listMapRaw.push(raw)
+                });
+                console.log(JSON.stringify(listMapRaw))
+                // let formData = new FormData();
+                // formData.append('listMapRaw', listMapRaw);
+
+                $.ajax({
+                    url: '/Home/AddWaferMapRaw',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + getCookie('auth_token')
+                    },
+                    data: JSON.stringify(listMapRaw),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (res) {
+                        alert(res.message)
+                        location.reload();
+                    },
+                    error: function (err) {
+                        if (err.status == 401) {
+                            logout();
+                        }
+                        else {
+                            alert(err.responseJSON.message)
+                        }
+                    }
+                });
+            }
+
+        }
+
+
+    </script>
+}

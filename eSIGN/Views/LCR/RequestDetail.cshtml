@@ -1,0 +1,337 @@
+﻿@{
+    ViewData["Title"] = "LCR - Request Detail";
+    string requestID = ViewBag.RequestID;
+}
+<div class="content-wrapper p-3" style="font-family:Courier New, Courier, monospace">
+    <h1 class="tagNameText"><i class="fas fa-info-circle"></i> LCR - REQUEST DETAIL</h1>
+    <div class="pb-5">
+        <div class="boxBorder">
+            <h5 class="font-weight-bold"><i class="fas fa-info"></i> PARAMETER INPUT</h5>
+            <div style="display:grid;grid-template-columns: 1fr 1fr 1fr ; gap: 6px;align-items:end; ">
+                <div class="form-group">
+                    <label>REQUEST ID</label>
+                    <span class="form-control" id="txtRequestID">@requestID</span>
+                </div>
+                <div class="form-group">
+                    <label>REQUEST STEP</label>
+                    <span class="form-control" id="txt_requestStep"></span>
+                </div>
+                <div class="form-group">
+                    <label>REQUEST STATUS</label>
+                    <span class="form-control" id="txt_requestStatus"></span>
+                </div>
+                <div class="form-group">
+                    <label>LOT ID</label>
+                    <span id="txt_lotID" class="form-control" ></span>
+                </div>
+                <div class="form-group">
+                    <label>CUSTOMER NAME</label>
+                    <span class="form-control" id="txt_customerName"></span>
+                </div>
+                <div class="form-group">
+                    <label>SMT PROCESS</label>
+                    <span class="form-control" id="txt_smtProcess"></span>
+                </div>
+                <div class="form-group">
+                    <label>CREATE BY</label>
+                    <span class="form-control" id="txt_createBy"></span>
+                </div>
+                <div class="form-group">
+                    <label>CREATE AT</label>
+                    <span class="form-control" id="txt_createAt"></span>
+                </div>
+            </div>
+        </div>
+        <div class="boxBorder mt-3" id="bomInfo">
+            <h5 class="font-weight-bold"><i class="fas fa-info"></i> BOM LIST INFORMATION</h5>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto; padding-bottom: 20px">
+                <table id="tbl_MeasureDT" class="table table-bordered" style="width: 100%;position:sticky;top:0"></table>
+            </div>
+        </div>
+        <div class="boxBorder mt-3 pb-0" id="dataFlow">
+            <h5 class="font-weight-bold"><i class="fas fa-server"></i> DATA FLOW</h5>
+            <div class="table-container" style="max-height: 300px; overflow-y: auto; padding-bottom: 20px">
+                <table id="tbl_DataFlow" class="table table-bordered" style="width: 100%;position:sticky;top:0"></table>
+            </div>
+            
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+        const requestID = '@Html.Raw(requestID)';
+        // const _userMail = localStorage.getItem('email').toLowerCase();
+
+        $(document).ready(async function () {
+            $('#loadIMG').removeClass('d-none');
+            try {
+                await new Promise(resolve => setTimeout(resolve, 500));// Cài đặt timeout 0.5 giây trước khi bắt đầu
+                const msg1 = await getRequestDetai();
+                if (msg1 === "OK") {
+                    getRequestStatus();
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000));// Cài đặt timeout 1 giây trước khi kết thúc
+            } catch (error) {
+                console.error("Đã xảy ra lỗi:", error);
+            } finally {
+                $('#loadIMG').addClass('d-none');
+            }
+        });
+
+        let requestStep = "", requestStatus = "";
+        async function getRequestDetai() {
+            const formData = new FormData();
+            formData.append("flag", "LcrElement");
+            formData.append("paramStr", `getRequestDetail;${requestID}`);
+
+            const resQuery = await axios.post('/Common/callUSPDTS', formData);
+            const resQueryData = resQuery.data;
+
+            if (resQueryData !== '') {
+                const idList = ['requestStep', 'requestStatus', 'lotID', 'customerName', 'smtProcess', 'createBy', 'createAt'];
+
+                const returnDataList = resQueryData[0];
+
+                idList.forEach(idName => {
+                    let dataTPM = returnDataList[idName];
+
+                    if (idName === "requestStatus") {
+                        switch (dataTPM) {
+                            case "Pending":
+                                $("#txt_" + idName).addClass("bg-warning text-white");
+                                break;
+                            case "Approve":
+                                $("#txt_" + idName).addClass("bg-success text-white");
+                                break;
+                            case "Reject":
+                                $("#txt_" + idName).addClass("bg-red text-white");
+                                break;
+                        }
+                        requestStatus = dataTPM;
+                    } else if (idName === "requestStep") {
+                        requestStep = dataTPM;
+                    } else if (idName === "createAt") {
+                        dataTPM = convertTime(dataTPM);
+                    }
+
+                    $("#txt_" + idName).html(dataTPM);
+                });
+
+                insertBOMTable(returnDataList["measurementData"]);
+            } else {
+                alert(`Request ID: ${requestID} does not exist!\nRequest ID: ${requestID} không tồn tại!`);
+                window.location.href = '/Home/Index';
+            }
+
+            return "OK";
+        };
+
+        function insertBOMTable(rawData) {
+            console.log(rawData);
+            
+            const rawDataJson = JSON.parse(rawData);
+
+            console.log(rawDataJson);
+
+            const columnNames = Object.keys(rawDataJson[0]);
+            
+            console.log(columnNames);
+
+            const table = document.getElementById('tbl_MeasureDT');
+            table.innerHTML = '';
+
+            // Tạo phần thead
+            const headerRow = document.createElement('tr');
+
+            columnNames.forEach(colName => {
+                const valueCount = rawDataJson[0][colName].split('|');
+                headerRow.appendChild(createHeaderCell(colName, valueCount.length));
+            });
+
+            const tableHeader = document.createElement('thead');
+            tableHeader.appendChild(headerRow);
+            // Tạo css cho <th>
+            tableHeader.style.position = 'sticky';
+            tableHeader.style.top = '0';
+            tableHeader.style.backgroundColor = '#f9f9f9';
+            tableHeader.style.zIndex = '1';
+            tableHeader.classList.add('thead-light', 'text-center', 'text-bold');
+            table.appendChild(tableHeader);
+
+            // Chèn dữ liệu cho <tbody>
+            const tableBody = document.createElement('tbody');
+
+            rawDataJson.forEach(rowData => {
+                const row = document.createElement('tr');
+
+                columnNames.forEach(colName => {
+                    const valElement = rowData[colName].split('|');
+
+                    valElement.forEach(valText => {
+                        if(colName === "OK"){
+                            if (valText === "P") {
+                                row.innerHTML += `<td><span class = "form-control bg-success text-white text-center">${valText}</span></td>`;
+                            } else if (valText === "F") {
+                                row.innerHTML += `<td><span class = "form-control bg-red text-white text-center">${valText}</span></td>`;
+                            }
+                        } else{
+                            row.innerHTML += `<td class="text-center">${valText}</td>`;
+                        }
+                    });
+                    
+                });
+
+                tableBody.appendChild(row);
+            });
+
+            table.appendChild(tableBody);
+        };
+
+        function createHeaderCell(text, span) {
+            const headerCell = document.createElement('th');
+            headerCell.textContent = text;
+            headerCell.colSpan = span;
+            return headerCell;
+        };
+
+        async function getRequestStatus() {
+            const formData = new FormData();
+            formData.append("flag", "LcrElement");
+            formData.append("paramStr", `getRequestStatus;${requestID}`);
+
+            const resQuery = await axios.post('/Common/callUSPDTS', formData);
+            const resQueryData = resQuery.data;
+
+            if (resQueryData !== '') { 
+                console.log(resQueryData);
+                const insertMsg = await insertDataFlowTable(resQueryData);
+            } else {
+                alert(`Data flow of Request ID: ${requestID} does not exist!\nRequest ID: ${requestID} này không tồn tại lưu trình ký!`);
+            }
+
+            return "OK";
+        };
+
+        async function insertDataFlowTable(rawData){
+            const columnNames = ["#", "REQUEST STEP", "REQUEST COMMENT", "REQUEST STATUS", "PIC OWNER", "UPDATE BY", "UPDATE AT", "ACTION"];
+            const keyNames = ["requestStep", "requestComment", "requestStatus", "picOwner", "updateBy", "updateAt"];
+
+            const table = document.getElementById('tbl_DataFlow');
+            table.innerHTML = '';
+
+            // Tạo phần thead
+            const headerRow = document.createElement('tr');
+
+            columnNames.forEach(colName => {
+                headerRow.appendChild(createHeaderCell(colName, 1));
+            });
+
+            const tableHeader = document.createElement('thead');
+            tableHeader.appendChild(headerRow);
+            // Tạo css cho <th>
+            tableHeader.style.position = 'sticky';
+            tableHeader.style.top = '0';
+            tableHeader.style.backgroundColor = '#f9f9f9';
+            tableHeader.style.zIndex = '1';
+            tableHeader.classList.add('thead-light', 'text-center', 'text-bold');
+            table.appendChild(tableHeader);
+
+            // Chèn dữ liệu cho <tbody>
+            const tableBody = document.createElement('tbody');
+
+            rawData.forEach((rowdt, idxNum) => {
+                const row = document.createElement('tr');
+                idxNum++;
+                row.innerHTML += `<td class="text-center">${idxNum}</td>`;
+
+                let stepName = "", appFlag = false, picOwner = "";
+                keyNames.forEach(colName => {
+                    let valElement = rowdt[colName];
+
+                    if (colName === "requestStep") {
+                        stepName = valElement;
+                    } else if (colName === "picOwner") {
+                        picOwner = valElement;
+                        valElement = valElement.replace(/;/g, "<br>");
+                    } else if (colName === "requestComment" && stepName === requestStep && requestStatus === "Pending") {
+                        if (picOwner.includes(_userMail) || _userRole === "Develop") {
+                            valElement = `<input type="text" class="form-control" id="txt_Comment" onchange="commentChange()" />`;
+                            appFlag = true;
+                        } else{
+                            valElement = "";
+                        }
+                    } else if (colName === "updateAt") {
+                        valElement = convertTime(valElement);
+                    }
+                    row.innerHTML += `<td class="text-center">${valElement}</td>`;
+                });
+
+                if (appFlag) {
+                    row.innerHTML += `<td>
+                                          <div style="display:flex; gap:6px; justify-content:center">
+                                               <button type="button" id="btnApprove" class="btn btn-success" onclick="userAction('Approve')" title="Approve" disabled><i class="far fa-check-circle"></i></button>
+                                               <button type="button" id="btnReject" class="btn btn-danger" onclick="userAction('Reject')" title="Reject" disabled><i class="fas fa-ban"></i></button>
+                                          </div>
+                                      </td>
+                    `;
+
+                    row.style.backgroundColor = 'lavender';
+                }
+
+                tableBody.appendChild(row);
+            });
+
+            table.appendChild(tableBody);
+
+            return "OK";
+        };
+
+        function convertTime(dateString) {
+            const date = new Date(dateString);
+
+            const year = date.getFullYear();
+            const month = ('0' + (date.getMonth() + 1)).slice(-2); // Thêm số 0 ở đầu nếu cần
+            const day = ('0' + date.getDate()).slice(-2);
+            const hours = ('0' + date.getHours()).slice(-2);
+            const minutes = ('0' + date.getMinutes()).slice(-2);
+            const seconds = ('0' + date.getSeconds()).slice(-2);
+
+            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+            console.log(formattedDate);
+
+            return formattedDate;
+        };
+
+        function commentChange() {
+            setTimeout(() => {
+                const cmmt = $('#txt_Comment').val();
+                $('#btnApprove, #btnReject').prop('disabled', cmmt === '');
+            }, 250);
+        };
+
+        async function userAction(actionFlag){
+            if (confirm(`Are you sure to ${actionFlag} this request?\nBạn có chắc muốn ${actionFlag} đơn đăng ký này chứ?`)) {
+                $('#loadIMG').removeClass('d-none');
+                const cmmt = $('#txt_Comment').val();
+                await new Promise(resolve => setTimeout(resolve, 500));// Cài đặt timeout 0.5 giây trước khi bắt đầu
+                const formData = new FormData();
+                formData.append("flag", "Lcr_Request");
+                formData.append("paramStr", `${actionFlag};${requestID};${_userMail};${requestStep};${cmmt}`);
+
+                const resQuery = await axios.post('/Common/callUSPDTS', formData);
+                const resQueryData = resQuery.data;
+
+                console.log(resQueryData);
+                await new Promise(resolve => setTimeout(resolve, 1000));// Cài đặt timeout 1 giây trước khi kết thúc
+                const msg = resQueryData[0]["msg"];
+                if (msg === "Success") {
+                    alert(`You have successfully ${actionFlag} this request!\nBạn đã ${actionFlag} thành công đơn này!`);
+                    window.location.href = '/Home/Index';
+                } else {
+                    alert(`Can't ${actionFlag} this request!\nPlease contact TEST IT first!\nKhông thể ${actionFlag} được yêu cầu này!\nVui lòng liên hệ TEST IT!`);
+                }
+            }
+        };
+    </script>
+}

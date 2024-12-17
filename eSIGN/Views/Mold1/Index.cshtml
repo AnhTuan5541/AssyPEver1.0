@@ -1,0 +1,775 @@
+﻿@{
+    ViewData["Title"] = "Home page";
+}
+@section Styles {
+    <style>
+
+    </style>
+
+}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Mold 1</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Mold 1</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid" id="container-fluid">
+            <div class="row">
+                <!-- ./col -->
+                <div class="form-group row">
+                    <div class="col-3">
+                        <button class="btn btn-success" id="btnNewLot" data-toggle="modal" data-target="#modal-default">New Lot</button>
+                        <button class="btn btn-warning d-none" id="btnRecheck" data-toggle="modal" data-target="#modal-recheck">Recheck</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="tbDuLieuDo">
+                        1. Bảng nhập dữ liệu đo
+                    </label>
+                    <table class="table table-bordered" id="tbDuLieuDo">
+                        <thead id="theadDuLieuDo">
+                            <tr id="trheadDuLieuDo">
+                                
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyDuLieuDo">
+                            
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="tbResult">
+                        2. Kết Quả và đánh giá
+                    </label>
+                    <table class="table table-bordered" id="tbResult">
+                        <thead id="theadResult">
+                            <tr id="trheadResult">
+                                
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyResult">
+                            
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="tbHistory">
+                        3. Bảng lịch sử  độ dịch chuyển mold
+                    </label>
+                    <table class="table table-bordered" id="tbHistory">
+                        <thead id="theadHistory">
+                            <tr id="trheadHistory">
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyHistory">
+                            
+                        </tbody>
+
+                    </table>
+                    <div class="pagination" id="pagination">
+                        @* <a href="#">&laquo;</a> *@
+
+                        @* <a href="#">&raquo;</a> *@
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="modal-default">
+                <div class="modal-dialog " style="max-width: 1500px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">New Lot</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="shift"><span style="color: red">*</span> Ca</label>
+                                        <div class="form-group">
+                                            <select class="form-control select2bs4" id="shift" disabled>
+                                                @* <option value="-1">--None selected--</option> *@
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="user_id"><span style="color: red">*</span> Operator ID</label>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" id="userId"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="lotNo"><span style="color: red">*</span> Lot no cài máy</label>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" id="lotNo" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tbNewLot">
+                                    <span style="color: red">*</span> Bảng kiểm soát dịch chuyển mold1
+                                </label>
+                                <table class="table table-bordered" id="tbNewLot">
+                                    <thead id="theadNewLot">
+                                        <tr id="trheadNewLot">
+                                           
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyNewLot">
+                                        
+                                    </tbody>
+
+                                </table>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="saveGiaTriDo()">Save</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
+        </div><!-- /.container-fluid -->
+
+        <div class="modal fade" id="modal-password">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Block System</h4>
+                        @* <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button> *@
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="shift"><span style="color: red">*</span> Password</label>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" id="password" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-primary" onclick="activeSystem()">Submit</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <div class="modal fade" id="modal-recheck">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Recheck system</h4>
+                        @* <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button> *@
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="shift"><span style="color: red">*</span> Password</label>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" id="passwordRecheck" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-primary" onclick="recheckSystem()">Submit</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+@section Scripts {
+    <script>
+        $(function () {
+            $('.select2').select2()
+
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
+            bsCustomFileInput.init();
+            $('.duallistbox').bootstrapDualListbox()
+
+        })
+
+        let token = ''
+        let _ngayDo, _idShift
+        let nextPageIndex, previousPageIndex, pageCount, rowsPerPage = 16, dataApplication;
+
+
+        $(document).ready(function () {
+            //$('#userId').val(localStorage.getItem('user_id'))
+            getActive()
+            getShift()
+            //1 là id customer = Monaco
+            getDiemDo(1)
+            getDiemDoValueSub()
+            getLichSuDo()
+        });
+
+        let dateVariable;
+        function getActive() {
+            $.ajax({
+                url: '/Mold1/GetActive',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    
+                },
+                success: function (res) {
+                    let data = res.data
+                    if (data[0].isActive == 0) {
+                        $('#modal-password').modal({
+                            backdrop: 'static', // Ngăn đóng modal bằng cách click ngoài modal
+                            keyboard: false       // Ngăn đóng modal bằng phím Escape
+                        }).modal('show');
+
+                        $('#container-fluid').addClass('d-none');
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+
+        function activeSystem() {
+            $.ajax({
+                url: '/Mold1/ActiveSystem',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    password: $('#password').val()
+                },
+                success: function (res) {
+                    if (res.statusCode === 'FAIL') {
+                        alert(res.message)
+                    }
+                    else {
+                        $('#modal-password').modal('hide');
+                        $('#container-fluid').removeClass('d-none'); // Hiển thị lại container
+                        modalShown = false; // Đánh dấu modal đã bị đóng
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function recheckSystem() {
+            $.ajax({
+                url: '/Mold1/RecheckSystem',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    password: $('#passwordRecheck').val(),
+                    ngayDo: _ngayDo,
+                    idShift: _idShift*1
+                },
+                success: function (res) {
+                    if (res.statusCode === 'FAIL') {
+                        alert(res.message)
+                    }
+                    else {
+                        alert(res.message)
+                        location.reload();
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function getShift() {
+            $.ajax({
+                url: '/Mold1/GetShift',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+
+                },
+                success: function (res) {
+                    let data = res.data
+                    let htmlBody = ''
+                    for (let i = 0; i < data.length; i++) {
+                        let opt = document.createElement('option');
+                        opt.value = data[i].id;
+                        opt.innerHTML = data[i].shift_type;
+                        document.getElementById('shift').appendChild(opt);
+                    }
+                    const currentHour = new Date().getHours();
+                    // const now = new Date();
+                    // now.setHours(21);
+                    // const currentHour = now.getHours();
+
+                    // Kiểm tra shift dựa trên giờ hiện tại
+                    let shiftId;
+                    if (currentHour >= 8 && currentHour < 20) {
+                        shiftId = 1;
+                    } else {
+                        shiftId = 2;
+                    }
+                    document.getElementById('shift').value = shiftId;
+
+                    const today = new Date();
+                    if (currentHour >= 8 && currentHour <= 23) {
+                        dateVariable = today.toISOString().substring(0, 10);
+                    } else {
+                        today.setDate(today.getDate() - 1);
+                        dateVariable = today.toISOString().substring(0, 10);
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+            $('#loadIMG').addClass('d-none')
+
+        }
+
+        function getDiemDo(idCustomer) {
+            $.ajax({
+                url: '/Mold1/GetDiemDo',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    idCustomer: idCustomer
+                },
+                success: function (res) {
+                    let data = res.data
+                    let trheadNewLot = '<th>Giá trị đo</th>'
+                    let trheadDuLieuDo = `<th>Customer</th>
+                                        <th>Ngày</th>
+                                        <th>Ca</th>
+                                        <th>Operator ID</th>
+                                        <th>Lot no cài máy</th>
+                                        <th>Hạng Mục mold dịch chuyển</th>`
+                    let trheadResult = `<th>Ngày</th>
+                                        <th>Hạng Mục mold dịch chuyển</th>`
+                    let trheadHistory = `<th>Ngày</th>
+                                        <th>Ca</th>
+                                        <th>Operator ID</th>
+                                        <th>Lot no cài máy</th>
+                                        <th>Hạng Mục mold dịch chuyển</th>`
+                    for (let i = 0; i < data.length; i++) {
+                        trheadNewLot += `<th>${data[i].diem_do}</th>`
+                        trheadDuLieuDo += `<th>${data[i].diem_do}</th>`
+                        trheadHistory += `<th>${data[i].diem_do}</th>`
+                        trheadResult += `<th>${data[i].diem_do}</th>`
+                    }
+                    $('#trheadNewLot').html(trheadNewLot)
+                    $('#trheadDuLieuDo').html(trheadDuLieuDo)
+
+                    trheadResult += `<th>Kết luận</th>`
+                    $('#trheadResult').html(trheadResult)
+
+                    trheadHistory += `<th>Kết luận</th>`
+                    $('#trheadHistory').html(trheadHistory)
+                    getGiaTriDo(idCustomer, data)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+
+        function getGiaTriDo(idCustomer, listDiemDo) {
+            $.ajax({
+                url: '/Mold1/GetGiaTriDo',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    idCustomer: idCustomer
+                },
+                success: function (res) {
+                    let data = res.data
+                    let htmlBody = ''
+                    for (let i = 0; i < data.length; i++) {
+                        htmlBody += `<tr>
+                                        <td>${data[i].gia_tri_do}</td>
+                                    `
+                        for (let j = 0; j < listDiemDo.length; j++) {
+                            htmlBody += `<td><input style="font-size: 0.9vw;" type="number" step="0.001" id-gia-tri-do=${data[i].id} id-diem-do=${listDiemDo[j].id} class="form-control giaTriDo"/></td>`
+                        }
+                        htmlBody += `</tr>`
+                    }
+                    $('#tbodyNewLot').html(htmlBody)
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function saveGiaTriDo() {
+            const listGiaTriDo = [];
+            let hasEmptyValue = false;
+            $('.giaTriDo').each(function () {
+                if ($(this).val() === '') {
+                    hasEmptyValue = true;
+                    return false;
+                }
+
+                const idGiaTriDo = $(this).attr('id-gia-tri-do');
+                const idDiemDo = $(this).attr('id-diem-do');
+
+                const dataItem = {
+                    'id_gia_tri_do': idGiaTriDo * 1,
+                    'id_diem_do': idDiemDo * 1,
+                    'value': $(this).val()
+                };
+
+                // Add the data item to the array
+                listGiaTriDo.push(dataItem);
+            });
+            if (hasEmptyValue) {
+                alert('Vui lòng nhập tất cả giá trị đo!');
+                return; 
+            }
+            if ($('#userId').val() === '') {
+                alert('Vui lòng nhập Operator ID!');
+                return; 
+            }
+            if ($('#lotNo').val() === '') {
+                alert('Vui lòng nhập lot no!');
+                return;
+            }
+
+            let data = {
+                'id_shift_type': $('#shift').val()*1,
+                'ngay_do': dateVariable,
+                'user_id': $('#userId').val(),
+                'lot_no': $('#lotNo').val(),
+                'list_gia_tri_do': listGiaTriDo
+            }
+            
+            $.ajax({
+                url: '/Mold1/SaveGiaTriDo',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: JSON.stringify(data),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (res) {
+                    alert(res.message)
+                    if(res.statusCode ==='SUCCESS'){
+                        location.reload();
+                    }
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function getDiemDoValueSub() {
+            const currentHour = new Date().getHours();
+            // const now = new Date();
+            // now.setHours(21);
+            // const currentHour = now.getHours();
+            let shift;
+            if (currentHour >= 8 && currentHour < 20) {
+                shift = "Day";
+            } else {
+                shift = "Night";
+            }
+
+            const today = new Date();
+            if (currentHour >= 8 && currentHour <= 23) {
+                
+            } else {
+                today.setDate(today.getDate() - 1);
+                
+            }
+
+            $.ajax({
+                url: '/Mold1/GetDiemDoValueSub',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    //idCustomer: idCustomer
+                },
+                success: function (res) {
+                    let data = res.data
+                    let htmlBody = ''
+                    let htmlBodyResult = ''
+                    let ngayDo, shiftCheck
+                    for (let i = 0; i < data.length; i++) {
+                        ngayDo = data[i].ngayDo
+                        shiftCheck = data[i].shift
+                        _ngayDo = data[i].ngayDo
+                        _idShift = data[i].idShift
+                        htmlBody += `<tr>
+                                        <td>${data[i].customer}</td>
+                                        <td>${data[i].ngayDo.substring(0,10)}</td>
+                                        <td>${data[i].shift}</td>
+                                        <td>${data[i].operatorId}</td>
+                                        <td>${data[i].lotNo}</td>
+                                        <td>${data[i].hangMuc}</td>`
+
+                        htmlBodyResult += `<tr><td>${data[i].ngayDo.substring(0, 10)}</td>
+                                                <td>${data[i].doLech}</td>`
+                        let duLieuDo = data[i].duLieuDo
+
+                        for (let j = 0; j < duLieuDo.length; j++) {
+                            htmlBody += `<td>${duLieuDo[j].avg}</td>`
+                            htmlBodyResult += `<td>${duLieuDo[j].do_lech}</td>`
+                        }
+                        htmlBody += '</tr>'
+                        if (data[i].conclusion === "PASS") {
+                            htmlBodyResult += `<td style="background-color: #01ff01">${data[i].conclusion}</td></tr>`
+                        } else {
+                            htmlBodyResult += `<td style="background-color: red">${data[i].conclusion}</td></tr>`
+                            setInterval(() => {
+                                toastr.error('DỪNG MÁY VÀ THÔNG BÁO CHO SHIFT LEADER');
+                            }, 5000);
+                            $('#btnRecheck').removeClass('d-none')
+                        }
+
+                    }
+                    $('#tbodyDuLieuDo').html(htmlBody)
+                    $('#tbodyResult').html(htmlBodyResult)
+                    const date = new Date(ngayDo);
+                    
+                    if (
+                        date.getFullYear() === today.getFullYear() &&
+                        date.getMonth() === today.getMonth() &&
+                        date.getDate() === today.getDate() &&
+                        shift === shiftCheck
+                    ) {
+                        const btnNewLot = document.getElementById('btnNewLot');
+                        btnNewLot.disabled = true;
+                    } 
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function getLichSuDo() {
+            $.ajax({
+                url: '/Mold1/GetLichSuDo',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getCookie('auth_token')
+                },
+                data: {
+                    //idCustomer: idCustomer
+                },
+                success: function (res) {
+                    let data = res.data
+                    setupPagination(data)
+                    dataApplication = data
+                },
+                error: function (err) {
+                    if (err.status == 401) {
+                        logout();
+                    }
+                    else {
+                        alert(err.responseJSON.message)
+                    }
+                }
+            });
+
+        }
+        function setupPagination(data) {
+            pageCount = Math.ceil(data.length / rowsPerPage);
+            let pagination = '';
+
+            pagination += `<a href="javascript:void(0)" class="a-pagination d-none" id="idPaginate_before" onclick="previousPage()"><<</a>`;
+            for (let i = 1; i <= pageCount; i++) {
+                if (i > 5) {
+                    pagination += `<a href="javascript:void(0)" class="a-pagination d-none" id="idPaginate_${i}" onclick="renderTable(dataApplication, ${i}, ${rowsPerPage})">${i}</a>`;
+                }
+                else {
+                    pagination += `<a href="javascript:void(0)" class="a-pagination" id="idPaginate_${i}" onclick="renderTable(dataApplication, ${i}, ${rowsPerPage})">${i}</a>`;
+                }
+            }
+            if (pageCount > 5) pagination += `<a href="javascript:void(0)" class="a-pagination" id="idPaginate_next" onclick="nextPage()">>></a>`;
+
+            $('#pagination').html(pagination);
+            renderTable(data, 1, rowsPerPage);
+        }
+        function renderTable(data, page, rowsPerPage) {
+            nextPageIndex = page + 1
+            previousPageIndex = page - 1
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = data.slice(start, end);
+            let tbodyHistory = '';
+
+            paginatedData.forEach(row => {
+                tbodyHistory += `<tr>
+                                    <td>${row.ngay_do.substring(0, 10)}</td>
+                                    <td>${row.shift_type}</td>
+                                    <td>${row.id_card}</td>
+                                    <td>${row.lot_no}</td>
+                                    <td>${row.hang_muc}</td>
+                                    <td>${row.diem_do_1}</td>
+                                    <td>${row.diem_do_2}</td>
+                                    <td>${row.diem_do_3}</td>
+                                    <td>${row.diem_do_4}</td>
+                                    <td>${row.diem_do_5}</td>
+                                    <td>${row.diem_do_6}</td>
+                                    <td>${row.diem_do_7}</td>
+                                    <td>${row.diem_do_8}</td>
+                                    <td>${row.diem_do_9}</td>
+                                    <td>${row.diem_do_10}</td>
+                                    <td>${row.diem_do_11}</td>
+                                    <td>${row.diem_do_12}</td>
+                                    <td style="background-color: ${row.conclusion === "PASS" ? '#01ff01' : 'red'};">${row.conclusion}</td>
+                                </tr>`
+            });
+
+            $('#tbodyHistory').html(tbodyHistory)
+
+            const menuItems = document.querySelectorAll('.a-pagination');
+            menuItems.forEach(menu => {
+                menu.classList.remove('active');
+            });
+            $('#idPaginate_' + page).addClass("active");
+            if (page >= 6) {
+                $('#idPaginate_before').removeClass('d-none');
+                $(`#idPaginate_${page}`).removeClass('d-none');
+                $(`#idPaginate_${page - 5}`).addClass('d-none');
+                $(`#idPaginate_${page + 5}`).addClass('d-none');
+            }
+
+            if (page == pageCount) {
+                $('#idPaginate_next').addClass('d-none');
+            }
+            if (page == pageCount -5) {
+                $('#idPaginate_next').removeClass('d-none');
+            }
+            if (page <= 5) {
+                $('#idPaginate_next').removeClass('d-none');
+                $(`#idPaginate_${page}`).removeClass('d-none');
+                $(`#idPaginate_${page + 5}`).addClass('d-none');
+            }
+            if (page == 1) {
+                $('#idPaginate_before').addClass('d-none');
+            }
+        }
+        function previousPage() {
+            renderTable(dataApplication, previousPageIndex, rowsPerPage)
+        }
+
+        function nextPage() {
+            renderTable(dataApplication, nextPageIndex, rowsPerPage)
+        }
+
+
+    </script>
+}

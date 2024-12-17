@@ -1,0 +1,739 @@
+﻿@{
+    ViewData["Title"] = "LCR - CREATE REQUEST";
+}
+
+<div class="content-wrapper p-3" style="font-family:Courier New, Courier, monospace; ">
+    <h1 class="tagNameText"><i class="fas fa-plus-circle"></i> LCR - CREATE REQUEST</h1>
+    <div style="display:grid; gap: 10px;">
+        <div class="boxBorder">
+            <h5 class="font-weight-bold"><i class="fas fa-keyboard"></i> Parameter Input</h5>
+            <div style="display:grid;grid-template-columns: 1fr 1fr 1fr ; gap: 6px;align-items:end; ">
+                <div class="form-group">
+                    <label>REQUEST ID</label>
+                    <span class="form-control" id="txtRequestID"></span>
+                </div>
+                <div class="form-group">
+                    <label>LOT ID</label>
+                    <input type="text" id="txt_LotID" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>CUSTOMER NAME</label>
+                    <select class="form-control" id="customerName"></select>
+                </div>
+                <div class="form-group">
+                    <label>SMT PROCESS</label>
+                    <select class="form-control" id="smtProcess"></select>
+                </div>
+                <div class="form-group">
+                    <label>REQUESTOR</label>
+                    <span class="form-control" id="requestor"></span>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" onclick="getDataFromMES()" id="btnGetMaterial" disabled><i class="fab fa-get-pocket"></i> GET INFORMATION</button>
+                    <a class="btn btn-outline-secondary" href="/lcr-configMap"><i class="fas fa-cogs"></i> Configuration</a>
+                </div>
+            </div>
+        </div>
+        <div class="boxBorder d-none" id="bomInfo">
+            <h5 class="font-weight-bold"><i class="fas fa-info"></i> BOM LIST INFORMATION</h5>
+            <button type="button" class="btn btn-success w-100 mb-3" id="btnSubMit" disabled><i class="far fa-arrow-alt-circle-right"></i> SUBMIT</button>
+            <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;">
+                <svg id="board" style=""></svg>
+
+                <div class="table-container" style="max-height: 300px; overflow-y: auto; padding-bottom: 20px">
+                    <table id="tbl_MeasureDT" class="table table-bordered" style="width: 100%;position:sticky;top:0"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(async function () {
+            $('#loadIMG').removeClass('d-none');
+            await new Promise(resolve => setTimeout(resolve, 500));// Cài đặt timeout 0.5 giây trước khi bắt đầu
+            const prMSG = await getProcess();
+            if(prMSG === "OK"){
+                await generateUUID();
+                await getMaterialMap();
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));// Cài đặt timeout 1 giây trước khi kết thúc
+            $('#loadIMG').addClass('d-none');
+        });
+
+        async function getProcess(){
+            const formData = new FormData();
+            formData.append("flag", "LcrElement");
+            formData.append("paramStr", `getProcess`);
+
+            const resQuery = await axios.post('/Common/callUSPDTS', formData);
+            const resQueryData = resQuery.data;
+
+            if (resQueryData !== '') {
+                const picOwnerSet = resQueryData[0]["picOwner"];
+
+                if ((_userRole === "Develop") || picOwnerSet.includes(_userMail)){
+                    return "OK";
+                } else {
+                    alert(`You don't have permissions access to here!\nPlease contact to TEST IT!\nBạn không có quyền truy cập vào đây!\nVui lòng liên hệ TEST IT!`);
+                    window.location.href = '/Home/Index';
+                }
+            } else{
+                alert(`Can't connect to Database!\nPlease contact to TEST IT!\nKhông thể truy cập tới cơ sở dữ liệu!\nVui lòng liên hệ TEST IT!`);
+                window.location.href = '/Home/Index';
+            }
+        };
+
+        function generateUUID() {
+                let uid = '', i = 0;
+                while (i++ < 36) {
+                    var c = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'[i - 1], r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    uid += (c == '-' || c == '4') ? c : v.toString(16)
+                }
+
+            $('#txtRequestID').html(uid);
+            $('#requestor').html(_userMail);
+        };
+        
+        let materialMap = []
+        async function getMaterialMap() {
+            const formData = new FormData();
+            formData.append('flag', 'LcrElement');
+            formData.append('paramStr', 'getMaterialMap');
+
+            const resDT = await axios.post('/Common/CallUSP', formData);
+
+            const restDT = resDT.data;
+            if (restDT !== '') {
+                materialMap = restDT;
+                // setCustomerName();
+                await getConfig();
+            } else {
+                alert(`ASSY PE not yet set up material map!\nPlease contact to ASSY PE first!
+                \nASSY PE chưa tạo dữ liệu cho nguyên vật liệu!\nVui lòng liên hệ ASSY PE để hỗ trợ!`);
+            }
+        };
+
+        let rawConfig, materialList;
+        async function getConfig() {
+            const formData = new FormData();
+            formData.append("flag", "LcrElement");
+            formData.append("paramStr", `getConfig`);
+
+            const resQuery = await axios.post('/Common/callUSPDTS', formData);
+            const resQueryData = resQuery.data;
+
+            if (resQueryData !== '') {
+                rawConfig = resQueryData;
+                const custNameList = [...new Set(rawConfig.map(item => item.customerName))];
+
+                $('#customerName').empty();
+                custNameList.forEach(custName => {
+                    $("#customerName").append(`<option value="${custName}">${custName}</option>`);
+                });
+
+                await selectCustomer();
+            } else {
+                alert(`Can't connect to Database!\nPlease contact to TEST IT!\nKhông thể truy cập tới cơ sở dữ liệu!\nVui lòng liên hệ TEST IT!`);
+                window.location.href = '/Home/Index';
+            }
+        };
+
+        $('#customerName').change(function () {
+            selectCustomer();
+        });
+
+        function selectCustomer() {
+            const custName = $('#customerName').val();
+
+            // const smtProcessList = [...new Set(materialMap.filter(item => item.customerName.includes(custName))
+            //     .map(item => item.smtProcess))];
+
+            materialList = [];
+            materialList = (rawConfig.find(item => item.customerName.includes(custName))?.itemCheck).split(';');
+
+            const smtProcessConfig = rawConfig.find(item => item.customerName.includes(custName))?.smtProcess;
+
+            const smtProcessList = smtProcessConfig.split(';');
+
+            $('#smtProcess').empty();
+
+            smtProcessList.forEach(smtProcess => {
+                $("#smtProcess").append(`<option value="${smtProcess}">${smtProcess}</option>`);
+            });
+            
+        };
+
+        // Dữ liệu linh kiện (có thể lấy từ file JSON hoặc database)
+        const board = document.getElementById("board");
+        // Hàm vẽ linh kiện
+        function drawComponent(component, heighSVG) {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            const xZoom = 80;
+            const xValue = (component.xCompont * xZoom);
+            const yValue = heighSVG - (component.yCompont * xZoom);
+
+            const widthValue = (component.xPosition - component.xCompont) * 2 * xZoom;
+            const heightValue = (component.yCompont - component.yPosition) * 2 * xZoom;
+
+            rect.id = 'rect_' + component.refName;
+
+            rect.setAttribute("x", xValue);
+            rect.setAttribute("y", yValue);
+
+            rect.setAttribute("width", widthValue );
+            rect.setAttribute("height", heightValue );
+
+            rect.setAttribute("stroke", "blue"); // Đặt màu đường viền (border)
+            rect.setAttribute("stroke-width", "1"); // Đặt độ dày đường viền 
+            rect.setAttribute("fill", "white");
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            // Căn giữa văn bản
+            text.setAttribute("x", xValue + widthValue / 2);
+            text.setAttribute("y", yValue + heightValue / 2);
+
+            // Thiết lập style cho văn bản
+            text.setAttribute("text-anchor", "middle"); // Căn giữa theo chiều ngang
+            text.setAttribute("dominant-baseline", "middle"); // Căn giữa theo chiều dọc
+
+            text.textContent = component.refName;
+            // Thiết lập màu chữ
+            text.setAttribute("fill", "hotpink"); // Đặt màu chữ thành hotpink
+            // Tính toán kích thước chữ dựa trên kích thước khối
+            /* const fontSize = Math.min(component.width, component.height) * 0.4; */ // Điều chỉnh hệ số để thay đổi tỉ lệ chữ
+            if (widthValue < 30 || heightValue < 30) {
+                if (widthValue < heightValue) {
+                    text.style.fontSize = (widthValue/2) + "px";
+                } else{
+                    text.style.fontSize = (heightValue/2) + "px";
+                }
+            } else {
+                const fontSize = Math.min(widthValue, heightValue) * 0.3;
+
+                text.style.fontSize = fontSize + "px";
+            }
+            
+            // text.setAttribute("transform", `rotate(${component.rotation} ${component.x + component.width / 2} ${component.y + component.height / 2})`);
+            text.setAttribute("transform", `rotate(${component.rotationNumber} ${xValue + widthValue / 2} ${yValue + heightValue / 2})`);
+
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            // group.setAttribute("transform", `rotate(${component.rotation} ${component.x + component.width / 2} ${component.y + component.height / 2})`);
+
+            group.appendChild(rect);
+            group.appendChild(text);
+
+            board.appendChild(group);
+        }
+
+        function drawMap() {
+            // const dataDrawing = componentsData;
+            const custName = $('#customerName').val();
+            const smtProcess = $('#smtProcess').val();
+
+            const dataDrawing = materialMap.filter(item => item.customerName.includes(custName) && item.smtProcess.includes(smtProcess));
+            // Khởi tạo biến lưu trữ giá trị lớn nhất và nhỏ nhất
+            let max_x = parseFloat(dataDrawing[0].xPosition);
+            let max_xcompont = parseFloat(dataDrawing[0].xCompont);
+            let max_y = parseFloat(dataDrawing[0].yPosition);
+            let max_ycompont = parseFloat(dataDrawing[0].yCompont);
+
+            // Duyệt qua từng đối tượng trong mảng data
+            for (let i = 1; i < dataDrawing.length; i++) {
+                // Chuyển đổi giá trị x, y, xcompont, ycompont sang số thực
+                let x = parseFloat(dataDrawing[i].xPosition);
+                let y = parseFloat(dataDrawing[i].yPosition);
+                let xcompont = parseFloat(dataDrawing[i].xCompont);
+                let ycompont = parseFloat(dataDrawing[i].yCompont);
+
+                // Tìm max x và xcompont tương ứng
+                if (x > max_x) {
+                    max_x = x;
+                    max_xcompont = xcompont; // Lưu giá trị xcompont tương ứng với max x
+                }
+
+                // Tìm max y và ycompont tương ứng
+                if (y > max_y) {
+                    max_y = y;
+                    max_ycompont = ycompont; // Lưu giá trị ycompont tương ứng với min y
+                }
+            };
+            // Kích 80 lần lên để có thể view được
+            const widthSvg = ((max_x - max_xcompont) + max_x + 0.3) * 80;
+            const heighSvg = (max_ycompont + 0.2) * 80;
+
+            board.innerHTML = '';
+
+            board.style.width = widthSvg;
+            board.style.height = heighSvg;
+            board.style.border = "3px solid red";
+
+            // Vẽ tất cả linh kiện
+            dataDrawing.forEach(rawData => {
+                drawComponent(rawData, heighSvg);
+            })
+        };
+
+        // Xử lý data từ eMES
+        function createHeaderCell(text, span) {
+            const headerCell = document.createElement('th');
+            headerCell.textContent = text;
+            headerCell.colSpan = span;
+            return headerCell;
+        }
+
+        function extractData(str) {
+            const parts = str.toUpperCase().split(',');
+            let val = '0', valper = '0', size = '0';
+            // Tìm giá trị biến thiên theo % và giá trị của linh kiện
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i].trim();
+                // Tìm 'value percent'
+                if (part.match(/^[\+\-]?\d+(\.\d+)?%$/) || part.match(/^\+\/\-\d+(\.\d+)?/)) {
+                    valper = part;
+                    // Tìm value là đứnng trước value percent
+                    val = parts[i - 1].trim();
+                    break;
+                }
+            }
+            // Nếu giá trị biến thiên không tồn tại thì sẽ không lấy được giá trị của value. Lấy bằng cách bình thường
+            if(str.includes('RES,TK,0 OHM,1/32W,01005')){
+                const ss = str;
+            }
+            // const valTextList = ['OHM', 'UF', 'NF', 'PF', 'UH', 'NH'];
+            const custName = $('#customerName').val();
+            const unitCategorys = rawConfig.find(item => item['customerName'].includes(custName))?.unitCategory;
+            const valTextList = unitCategorys.split(',');
+            if(val === '0'){
+                for (let i = 0; i < parts.length; i++) {
+                    const partText = parts[i].trim();
+                    for(let k = 0; k < valTextList.length; k++){
+                        if(partText.includes(valTextList[k])){
+                            val = partText;
+                            break;
+                        }
+                        if(val !== '0'){
+                            break;
+                        }
+                    }
+                }
+            }
+            // Tìm size của linh kiện
+            const lastStr = parts[parts.length - 1];
+            if (lastStr.match(/^\d+$/)) {
+                size = lastStr;
+            } else {
+                if (/^[a-zA-Z]+$/.test(lastStr)) {
+                    const secondLast = parts[parts.length - 2];
+                    if (/^[a-zA-Z]+$/.test(secondLast)) {
+                        const thirdLast = parts[parts.length - 3];
+                        size = thirdLast;
+                    } else {
+                        size = secondLast;
+                    }
+                } else {
+                    size = lastStr;
+                }
+            }
+
+            return { val, valper, size };
+        }
+
+        // Hàm tách giá trị
+        function extractValueAndUnit(val) {
+            let number = '', unit = '', numberd = '';
+            if (val.includes('OHM') && val.includes(' ')) {
+                const parts = val.split(' ');
+
+                let numbuff = 0;
+                numberd = parts[0];
+                unit = parts.length > 1 ? parts[1] : '';
+
+                if(numberd.includes("K")){
+                    numberd = numberd.replace("K", "");
+                    // numbuff = numberd * 1000;
+                    numbuff = numberd;
+                    unit = "K" + unit;
+                    number = parseFloat(numbuff);
+                } else {
+                    number = numberd;
+                }
+            } else {
+                const match = val.match(/(\d*\.?\d+)([a-zA-Z]*)/);
+                numberd = match[1];
+                number = parseFloat(match[1]);
+                unit = match[2];
+            }
+            
+            return { number, unit, numberd };
+        };
+
+        // Hàm tính toán minRank, maxRank
+        function calculateRank(valNumber, valper) {
+            valNumber = parseFloat(valNumber);
+
+            let minRank, maxRank;
+            if (valper !== '') {
+                const percentage = parseFloat(valper.replace('%', '')) / 100; // Lấy giá trị phần trăm và chuyển sang dạng thập phân
+                const valPerNumber = valNumber * percentage; // Tính toán giá trị dựa trên phần trăm
+
+                if (valper.includes("+/-")) {
+                    const verR1 = valper.replace("+/-", '');
+                    const valPerNumber1 = parseFloat(verR1.match(/\d+(\.\d+)?/)[0]);
+
+                    minRank = valNumber - valPerNumber1;
+                    maxRank = valNumber + valPerNumber1;
+
+                    minRank = minRank.toFixed(3);
+                    maxRank = maxRank.toFixed(3);
+                } else {
+                    minRank = (valNumber - valPerNumber);
+                    maxRank = (valNumber + valPerNumber);
+
+                    minRank = minRank.toFixed(3);//
+                    maxRank = maxRank.toFixed(3);
+                }
+            } else {
+                minRank = maxRank = valNumber.toFixed(3);
+            }
+
+            // Loại bỏ ".00" nếu có
+            minRank = minRank.replace('.000', '');
+            maxRank = maxRank.replace('.000', '');
+
+            return { minRank, maxRank };
+        };
+
+        async function handerMESData() {
+            const lotID = $('#txt_LotID').val();
+
+            const table = document.getElementById('tbl_MeasureDT');
+            table.innerHTML = '';
+
+            const smtProcess = $('#smtProcess').val();
+
+            // const materials = ['Resistor', 'Capacitor', 'Ferrite Bead', 'Resonator'];
+            const materials = materialList;
+
+            const dataCalculate = dtMES.filter(item => 
+                item.Material !== undefined && materials.some(material => item.Material.includes(material)) 
+                && item.SMT.includes(smtProcess)
+            );
+
+            if (dataCalculate.length > 0) {
+                // Tạo phần thead
+                const headerRow = document.createElement('tr');
+
+                headerRow.appendChild(createHeaderCell('Sid #', 1));
+                headerRow.appendChild(createHeaderCell('Size', 1));
+                headerRow.appendChild(createHeaderCell('Ref', 1));
+                headerRow.appendChild(createHeaderCell('Value', 3)); // Gộp 3 cột "Value"
+                headerRow.appendChild(createHeaderCell('Range', 3)); // Gộp 3 cột "Range"
+                headerRow.appendChild(createHeaderCell('측정값 1LANE', 1));
+                headerRow.appendChild(createHeaderCell('OK', 1));
+
+                const tableHeader = document.createElement('thead');
+                tableHeader.appendChild(headerRow);
+                tableHeader.style.position = 'sticky';
+                tableHeader.style.top = '0';
+                tableHeader.style.backgroundColor = '#f9f9f9';
+                tableHeader.style.zIndex = '1';
+                tableHeader.classList.add('thead-light', 'text-center', 'text-bold');
+                table.appendChild(tableHeader);
+
+                // Tạo phần tbody
+                const tableBody = document.createElement('tbody');
+
+                dataCalculate.forEach(rowData => {
+                    const refNameList = rowData['Ref Des'].split(',');
+                    const sidNumber = rowData['SID#'];
+                    const descStr = rowData['Description'];
+
+                    console.log("Desc: " + descStr);
+
+                    let { val, valper, size } = extractData(descStr);
+
+                    let { number: valNumber, unit: valText, numberd: valNumD } = extractValueAndUnit(val);
+
+                    console.log("Val: " + valNumber + "|valText: " + valText + "|valD: " + valNumD + "|per: " + valper);
+
+                    // Có 2 case đặc biệt cho việc cài đặt size linh kiện
+                    if (descStr.includes(`0250125M`)) {
+                        // SMT1
+                        size = "008004";
+                    } else if (descStr.includes(`0201H.55,HZT`)) {
+                        // SMT2
+                        size = "0201";
+                    }
+
+                    refNameList.forEach((refName, refIndex) => {
+                        const REFNAME = refName.trim();
+                        const row = document.createElement('tr');
+                        // Các cell còn lại
+                        // if (valText === '') {
+                        //     if (REFNAME.includes('L')) {
+                        //         valText = 'UH';
+                        //     } else if (REFNAME.includes('R')) {
+                        //         valText = 'OHM';
+                        //     } else if (REFNAME.includes('C')) {
+                        //         valText = 'UF';
+                        //     }
+                        // }
+                        row.innerHTML += `
+                              <td class="text-center">${sidNumber}</td>
+                              <td class="text-center">${size}</td>
+                              <td class="text-center">${REFNAME.trim()}</td>
+                              <td class="text-center">${valNumD}</td>
+                              <td class="text-center">${valText}</td>
+                              <td class="text-center">${valper}</td>
+                            `;
+
+                        // Tính toán minRank, maxRank
+                        let { minRank, maxRank } = calculateRank(valNumber, valper);
+                        row.innerHTML += `
+                                <td class="text-center">${minRank}</td>
+                                <td class="text-center">~</td>
+                                <td class="text-center">${maxRank}</td>
+                                <td><input type="text" class="form-control" id="txt_${REFNAME}" /></td>
+                                <td><span id="res_${REFNAME}" class = "form-control"></span></td>
+                        `;
+                        // Thêm event listener cho ô input
+                        const inputField = row.querySelector(`#txt_${REFNAME}`);
+                        inputField.addEventListener('focus', () => handleInputFocus(`#rect_${REFNAME}`));
+                        inputField.addEventListener('blur', () => handleInputBlur(`#txt_${REFNAME}`, `#rect_${REFNAME}`, minRank, maxRank));
+                        inputField.addEventListener('input', handleInputChange);
+
+                        tableBody.appendChild(row);
+                    });
+                });
+                table.appendChild(tableBody);
+
+                drawMap();
+                $('#bomInfo').removeClass('d-none');
+            } else {
+                $('#bomInfo').addClass('d-none');
+                alert(`This Lot: '${lotID}' doesn't have data corresponding to the SMT Process you have selected!!\nLot: '${lotID}' không có dữ liệu tương ứng với Quy trình SMT bạn đã chọn!`);
+            }
+        };
+
+        let timeout;
+        $('#txt_LotID').on('input', function () {
+            clearTimeout(timeout);
+            const lotID = $('#txt_LotID').val();
+            timeout = setTimeout(function () {
+                $('#btnGetMaterial').prop('disabled', lotID === '');
+            }, 250);
+        });
+
+        let dtMES;
+        const mesUrl = 'http://10.201.11.45:8088/atv/data400/ATV/getScheduleSheetMemoFile'
+        async function getDataFromMES() {
+            $('#loadIMG').removeClass('d-none');
+
+            const lotID = $('#txt_LotID').val();
+            const smtProcess = $('#smtProcess').val();
+
+            const formData = {
+              lotName: lotID, 
+              station: smtProcess,
+              userBadge: _userID !== ''? _userID : '700087'
+            };
+
+            try {
+                const response = await axios.get(mesUrl, { params: formData });
+                console.log(response.data);
+                dtMES = response.data.result;
+
+                await handerMESData(dtMES);
+
+            } catch (error) {
+                console.error("Error fetching or handling data:", error);
+                alert("Error processing data. Please try again later.");
+            } finally {
+                $('#loadIMG').addClass('d-none');
+            }
+        };
+
+        // 1. Hàm được gọi khi click vào ô input
+        function handleInputFocus(idNumber) {
+            console.log("Ô input được focus: " + idNumber);
+
+            const svgElement = document.querySelector(idNumber);
+            svgElement.setAttribute('fill', 'yellow');
+        }
+
+        // 2. Hàm được gọi khi dừng nhập liệu (blur)
+        function handleInputBlur(txtIdNumber,idNumber, minVal, maxVal) {
+            const inputValue = $(txtIdNumber).val();
+            console.log("Dừng nhập liệu", inputValue);
+
+            const svgElement = document.querySelector(idNumber);
+            svgElement.setAttribute('fill', 'white');
+
+            const resID = txtIdNumber.replace("txt", "res");
+            if (inputValue !== '') {
+                const resText = parseFloat(inputValue) <= parseFloat(maxVal) && parseFloat(minVal) <= parseFloat(inputValue) ? 'P' : 'F';
+
+                $(resID).html(resText);
+                if (resText === 'P') {
+                    $(resID).css({
+                        "background-color": 'lime',
+                        "color": "white"
+                    });
+                } else {
+                    $(resID).css({
+                        "background-color": 'red',
+                        "color": "white"
+                    });
+                }
+                svgElement.setAttribute('fill', 'lime');
+            } else {
+                $(resID).html('');
+                $(resID).css({
+                    "background-color": 'white',
+                    "color": "white"
+                });
+            }
+
+            $('#btnSubMit').prop('disabled', !checkAllInputsFilled('tbl_MeasureDT'));
+        };
+
+        // 3. Chỉ cho phép nhập số vào ô input
+        function handleInputChange(event) {
+            // Loại bỏ các ký tự không phải số
+            this.value = this.value.replace(/[^0-9.]/g, '');
+
+            // Cho phép tối đa một dấu chấm
+            if ((this.value.match(/\./g) || []).length > 1) {
+                this.value = this.value.slice(0, -1);
+            }
+        }
+
+        function checkAllInputsFilled(tableId) {
+            let allFilled = true;
+
+            // Lấy tất cả thẻ input trong table
+            const inputs = document.querySelectorAll(`#${tableId} input`);
+
+            // Duyệt qua từng thẻ input
+            inputs.forEach(input => {
+                // Kiểm tra nếu input có giá trị null hoặc rỗng
+                if (input.value === null || input.value.trim() === "") {
+                    allFilled = false;
+                    // Thoát khỏi vòng lặp nếu tìm thấy input rỗng
+                    return;
+                }
+            });
+
+            return allFilled;
+        }
+
+        $('#btnSubMit').click(function () {
+            createRequest();
+        });
+
+        async function createRequest() {
+            if(confirm(`Are you sure to submit this request?\nBạn có chắc muốn nộp đơn đăng ký này chứ?`)){
+                const tblJson = await tableToJson();
+                console.log(tblJson);
+                const requestID = $('#txtRequestID').text();
+                const lotID = $('#txt_LotID').val();
+                const custName = $('#customerName').val();
+                const smtProcess = $('#smtProcess').val();
+
+                const dataArray = Object.values(dtMES); // Lấy tất cả giá trị thành mảng
+                const mesRawJson = JSON.stringify(dataArray); // Chuyển đổi thành JSON
+
+                console.log(mesRawJson);
+                console.log(tblJson);
+
+                // const paramStr = `create;${requestID};${lotID};${custName};${smtProcess};${mesRawJson};${tblJson};${_userMail}`;
+                const paramStr = `create;${requestID};${lotID};${custName};${smtProcess};${tblJson};${_userMail}`;
+                const formData = new FormData();
+                formData.append('flag', 'Lcr_Request');
+                formData.append('paramStr', paramStr);
+
+                const resDT = await axios.post('/Common/CallUSP', formData);
+                console.log(resDT);
+
+                const resMSG = resDT.data[0].msg;
+                if (resMSG === 'Success') {
+                    alert(`You have successfully created this request!\nBạn đã tạo thành công đơn này!`);
+                    window.location.href = '/Home/Index';
+                } else {
+                    alert(`Can't create this request!\nPlease contact TEST IT first!\nKhông thể tạo được yêu cầu này!\nVui lòng liên hệ TEST IT!`);
+                }
+            }
+        };
+
+        async function tableToJson() {
+            const table = document.getElementById("tbl_MeasureDT");
+            const jsonData = [];
+
+            // Lấy danh sách các tiêu đề cột (<th>)
+            const headers = [];
+            let headerIndex = 0;
+            const headerRow = table.querySelector('tr'); 
+
+            for (let i = 0; i < headerRow.cells.length; i++) {
+                const th = headerRow.cells[i];
+                const colSpan = parseInt(th.getAttribute('colspan') || '1', 10);
+
+                for (let j = 0; j < colSpan; j++) {
+                    headers.push(th.textContent.trim());
+                }
+                headerIndex += colSpan;
+            }
+
+            // Lặp qua từng dòng của bảng (trừ dòng tiêu đề)
+            for (let i = 1; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const rowData = {};
+                let cellIndex = 0;
+                
+                let lastHeader = '', lastValue = '';
+       
+                // Lặp qua từng ô trong dòng
+                for (let j = 0; j < row.cells.length; j++) {
+                    const cell = row.cells[j];
+                    let valueNow = '';
+                    // Sử dụng tiêu đề cột làm key cho object
+                    const header = headers[cellIndex];
+
+                    // Nếu ô chứa input, lấy giá trị từ input
+                    if (cell.querySelector('input')) {
+                        valueNow = cell.querySelector('input').value;
+                    } else if (cell.querySelector('span')){
+                        valueNow = cell.querySelector('span').textContent.trim();
+                    } else {
+                        valueNow = cell.textContent.trim();
+                    }
+                    if (lastHeader === '') {
+                        lastValue = valueNow;
+                        rowData[header] = valueNow;
+                    } else {
+                        if (header === lastHeader) {
+                            lastValue += ('|' + valueNow);
+                        } else {
+                            if (lastValue !== '' && lastValue.includes('|')) {
+                                rowData[lastHeader] = lastValue;
+                                
+                            }
+
+                            rowData[header] = valueNow;
+                            lastValue = valueNow;
+                        }
+                    }
+                    cellIndex++;
+                    lastHeader = header;
+                }
+                jsonData.push(rowData);
+            }
+
+            // Chuyển đổi sang JSON string
+            const jsonString = JSON.stringify(jsonData);
+            return jsonString;
+        }
+    </script>
+}

@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Page Not Found";
+}
+<div class="content-wrapper p-3">
+    <img width="100%" height="100%" src="/images/404-status-code.png" /> 
+</div>
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            const appOrigin = window.location.origin;
+            const newUrl = appOrigin + '/not-found';
+            window.history.replaceState({}, '', newUrl);
+        });
+    </script>
+}

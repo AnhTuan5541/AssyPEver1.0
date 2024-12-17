@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>\\10.201.12.31\Files Transfer\700087\PE1Tool</_PublishTargetUrl>
+<<<<<<< Updated upstream
+    <History>True|2024-10-03T10:20:54.3601876Z||;</History>
+=======
+    <History>True|2024-10-04T10:19:49.8593490Z||;True|2024-10-04T17:18:25.3685559+07:00||;True|2024-10-04T17:12:50.5508574+07:00||;True|2024-10-03T17:20:54.3601876+07:00||;</History>
+>>>>>>> Stashed changes
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

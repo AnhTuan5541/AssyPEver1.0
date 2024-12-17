@@ -1,0 +1,49 @@
+﻿fieldset {
+    border-radius: 5px;
+    width: 100%;
+    border: 1px solid #D4D4D5;
+    padding: 10px;
+    overflow: auto;
+}
+
+legend {
+    font-size: 24px;
+    font-weight: 600;
+    width: fit-content;
+}
+.mainContentSet {
+    padding: 10px 10px 10px 85px;
+    font-family:'Courier New', monospace;
+    height: calc( 100vh - 130px );
+    width: 100%;
+    overflow: auto;
+}
+
+.tagNameText {
+    font-family: 'Courier New',monospace;
+    font-size: 24px;
+    color: lightslategrey;
+    font-weight: bold;
+    text-align: center;
+    border: 3px dashed #d1cece;
+    padding: 8px 15px;
+    display: inline-block;
+    background-color: #f2f2f2;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+.boxBorder {
+    border: 1px solid grey;
+    border-radius: 8px;
+    padding: 10px;
+}
+.loaderDiv {
+    position: absolute;
+    z-index: 4;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: lightgrey;
+    opacity: 40%
+}

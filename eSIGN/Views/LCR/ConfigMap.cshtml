@@ -1,0 +1,279 @@
+﻿@{
+    ViewData["Title"] = "LCR - CONFIG MAP";
+}
+<div class="content-wrapper p-3" style="font-family:Courier New, Courier, monospace; ">
+    <h1 class="tagNameText"><i class="fas fa-plus-circle"></i> LCR - CONFIG MAP</h1>
+    <div class="boxBorder">
+        <div class="boxBorder">
+            <h5 class="font-weight-bold"><i class="fas fa-keyboard"></i> Parameter Input</h5>
+            <div style="display:grid;grid-template-columns: 1fr 1fr 1fr ; gap: 6px;align-items:end; ">
+                <div class="form-group">
+                    <label>MATERIAL COORDINATE FILE SAMPLE</label><br />
+                    <a href="~/file/materialcoordinate.xlsx" class="form-control"><i class="fas fa-file-archive"></i> FILE SAMPLE</a>
+                </div>
+                <div class="form-group">
+                    <label>CUSTOMER NAME</label>
+                    <select class="form-control" id="customerName"></select>
+                </div>
+                <div class="form-group">
+                    <label>SMT PROCESS</label>
+                    <select class="form-control" id="smtProcess"></select>
+                </div>
+                <div class="form-group">
+                    <label>MATERIAL MAP FILE</label>
+                    <input type="file" class="form-control" accept=".xlsx, .xls" id="materialMapFile" />
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnDrawMap" disabled><i class="fas fa-pencil-ruler"></i> DRAW MAP</button>
+                    <button type="button" class="btn btn-success" id="btnSaveConfig" onclick="saveConfig()" disabled><i class="far fa-save"></i> SAVE CONFIG</button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3" style="display:grid;justify-content:center;align-items:center">
+            <h5 class="font-weight-bold"><i class="fas fa-map-marked-alt"></i> Material Map</h5>
+            <svg id="board" style=""></svg>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+        $(document).ready(async function () {
+            $('#loadIMG').removeClass('d-none');
+            await new Promise(resolve => setTimeout(resolve, 500));// Cài đặt timeout 0.5 giây trước khi bắt đầu
+
+            const prMSG = await getConfig();
+
+            await new Promise(resolve => setTimeout(resolve, 1000));// Cài đặt timeout 1 giây trước khi kết thúc
+            $('#loadIMG').addClass('d-none');
+        });
+        let rawConfig;
+        async function getConfig() {
+            const formData = new FormData();
+            formData.append("flag", "LcrElement");
+            formData.append("paramStr", `getConfig`);
+
+            const resQuery = await axios.post('/Common/callUSPDTS', formData);
+            const resQueryData = resQuery.data;
+
+            if (resQueryData !== '') {
+                rawConfig = resQueryData;
+                const custNameList = [...new Set(rawConfig.map(item => item.customerName))];
+
+                $('#customerName').empty();
+                custNameList.forEach(custName => {
+                    $("#customerName").append(`<option value="${custName}">${custName}</option>`);
+                });
+
+                await selectCustomer();
+            } else {
+                alert(`Can't connect to Database!\nPlease contact to TEST IT!\nKhông thể truy cập tới cơ sở dữ liệu!\nVui lòng liên hệ TEST IT!`);
+                window.location.href = '/Home/Index';
+            }
+        };
+        
+        $('#customerName').change(function () {
+            selectCustomer();
+        });
+
+        async function selectCustomer() {
+            const custName = $('#customerName').val();
+
+            const smtProcessConfig = rawConfig.find(item => item.customerName.includes(custName))?.smtProcess;
+
+            $('#smtProcess').empty();
+
+            const smtProcessList = smtProcessConfig.split(';');
+            smtProcessList.forEach(smtProcess => {
+                $("#smtProcess").append(`<option value="${smtProcess}">${smtProcess}</option>`);
+            });
+        };
+
+        $("#materialMapFile").change(function () {
+            const hasFile = $(this)[0].files.length > 0;
+            $('#btnDrawMap').prop('disabled', !hasFile);
+        });
+        let jsonData = [];
+
+        const readFilePromise = new Promise((resolve, reject) => {
+            $("#materialMapFile").change(function () {
+                const input = document.getElementById("materialMapFile");
+                if (input.files.length > 0) {
+                    readXlsxFile(input.files[0])
+                        .then((data) => {
+                            const headers = data[0];
+                            jsonData = [];
+                            for (let i = 1; i < data.length; i++) {
+                                const temp = {};
+                                for (let j = 0; j < headers.length; j++) {
+                                    temp[headers[j]] = data[i][j];
+                                }
+                                jsonData.push(temp);
+                            }
+                            console.log("Đã đọc file:", jsonData);
+                            const jsonDataString = JSON.stringify(jsonData);
+                            console.log("File chuyển sang JSON: ", jsonDataString);
+
+                            resolve(); // Đánh dấu Promise đã hoàn thành khi đọc file xong
+                        })
+                        .catch((error) => {
+                            console.error("Lỗi khi đọc file:", error);
+                            reject(error); // Đánh dấu Promise bị lỗi
+                        });
+                } else {
+                    console.log("Chưa chọn file Excel!");
+                    reject(new Error("Chưa chọn file Excel!"));
+                }
+            });
+        });
+        $("#btnDrawMap").click(function () {
+            readFilePromise
+                .then(() => {
+                    console.log("Bắt đầu vẽ map...");
+                    drawMap();
+                })
+                .catch((error) => {
+                    console.error("Lỗi:", error);
+                });
+        });
+
+        const board = document.getElementById("board");
+
+        async function drawMap() {
+            const custName = $('#customerName').val();
+            const smtProcess = $('#smtProcess').val();
+
+            const dataDrawing = jsonData.filter(item => item.CustomerName.includes(custName) && item.SMTProcess.includes(smtProcess));
+            // Khởi tạo biến lưu trữ giá trị lớn nhất và nhỏ nhất
+            let max_x = parseFloat(dataDrawing[0]["Xposition"]);
+            let max_xcompont = parseFloat(dataDrawing[0].Xcompont);
+            let max_y = parseFloat(dataDrawing[0].Yposition);
+            let max_ycompont = parseFloat(dataDrawing[0].Ycompont);
+
+            // Duyệt qua từng đối tượng trong mảng data
+            for (let i = 1; i < dataDrawing.length; i++) {
+                // Chuyển đổi giá trị x, y, xcompont, ycompont sang số thực
+                let x = parseFloat(dataDrawing[i].Xposition);
+                let y = parseFloat(dataDrawing[i].Yposition);
+                let xcompont = parseFloat(dataDrawing[i].Xcompont);
+                let ycompont = parseFloat(dataDrawing[i].Ycompont);
+
+                // Tìm max x và xcompont tương ứng
+                if (x > max_x) {
+                    max_x = x;
+                    max_xcompont = xcompont; // Lưu giá trị xcompont tương ứng với max x
+                }
+
+                // Tìm max y và ycompont tương ứng
+                if (y > max_y) {
+                    max_y = y;
+                    max_ycompont = ycompont; // Lưu giá trị ycompont tương ứng với min y
+                }
+            };
+            // Kích 80 lần lên để có thể view được
+            const widthSvg = ((max_x - max_xcompont) + max_x + 0.3) * 80;
+            const heighSvg = (max_ycompont + 0.2) * 80;
+
+            board.innerHTML = '';
+
+            board.style.width = widthSvg;
+            board.style.height = heighSvg;
+            board.style.border = "3px solid red";
+
+            // Vẽ tất cả linh kiện
+            await dataDrawing.forEach(rawData => {
+                drawComponent(rawData, heighSvg);
+            })
+
+            console.log("Vẽ map xong!");
+            $("#btnSaveConfig").prop("disabled", false);
+        };
+
+        // Hàm vẽ linh kiện
+        async function drawComponent(component, heighSVG) {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            const xZoom = 80;
+            const xValue = (component.Xcompont * xZoom);
+            const yValue = heighSVG - (component.Ycompont * xZoom);
+
+            const widthValue = (component.Xposition - component.Xcompont) * 2 * xZoom;
+            const heightValue = (component.Ycompont - component.Yposition) * 2 * xZoom;
+
+            rect.id = 'rect_' + component.refName;
+
+            rect.setAttribute("x", xValue);
+            rect.setAttribute("y", yValue);
+
+            rect.setAttribute("width", widthValue);
+            rect.setAttribute("height", heightValue);
+
+            rect.setAttribute("stroke", "blue"); // Đặt màu đường viền (border)
+            rect.setAttribute("stroke-width", "1"); // Đặt độ dày đường viền
+            rect.setAttribute("fill", "white");
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            // Căn giữa văn bản
+            text.setAttribute("x", xValue + widthValue / 2);
+            text.setAttribute("y", yValue + heightValue / 2);
+
+            // Thiết lập style cho văn bản
+            text.setAttribute("text-anchor", "middle"); // Căn giữa theo chiều ngang
+            text.setAttribute("dominant-baseline", "middle"); // Căn giữa theo chiều dọc
+
+            text.textContent = component.RefName;
+            // Thiết lập màu chữ
+            text.setAttribute("fill", "hotpink"); // Đặt màu chữ thành hotpink
+            // Tính toán kích thước chữ dựa trên kích thước khối
+            /* const fontSize = Math.min(component.width, component.height) * 0.4; */ // Điều chỉnh hệ số để thay đổi tỉ lệ chữ
+            if (widthValue < 30 || heightValue < 30) {
+                if (widthValue < heightValue) {
+                    text.style.fontSize = (widthValue / 2) + "px";
+                } else {
+                    text.style.fontSize = (heightValue / 2) + "px";
+                }
+            } else {
+                const fontSize = Math.min(widthValue, heightValue) * 0.3;
+
+                text.style.fontSize = fontSize + "px";
+            }
+
+            // text.setAttribute("transform", `rotate(${component.rotation} ${component.x + component.width / 2} ${component.y + component.height / 2})`);
+            text.setAttribute("transform", `rotate(${component.Rotation} ${xValue + widthValue / 2} ${yValue + heightValue / 2})`);
+
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            // group.setAttribute("transform", `rotate(${component.rotation} ${component.x + component.width / 2} ${component.y + component.height / 2})`);
+
+            group.appendChild(rect);
+            group.appendChild(text);
+
+            board.appendChild(group);
+        }
+
+        async function saveConfig() {
+            const jsonDataString = JSON.stringify(jsonData);
+
+            const paramStr = `saveConfig;${jsonDataString};${_userID}`;
+
+            console.log(paramStr);
+
+            const data = {
+                "catalogStr": "WaferMapViewer",
+                "uspName": "[dbo].[USP_ASSY_Call_SP]",
+                "flagStr": "LcrElement",
+                "parameterStr": paramStr
+            }
+
+            const resDT = await axios.post('/api/common/updateUSP', data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log(resDT.data);
+
+            if (resDT.data === "SUCCESS"){
+                alert(`You have successfully created this configuration!\nBạn đã tạo thành công thông số cài đặt!`);
+                window.location.href = '/LCR/Index';
+            }
+        };
+    </script>
+}

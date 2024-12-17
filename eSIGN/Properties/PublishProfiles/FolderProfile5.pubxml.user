@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>\\10.201.12.31\Files Transfer\700087\PE1Tool</_PublishTargetUrl>
+    <History>True|2024-10-15T07:10:26.4306996Z||;False|2024-10-15T14:10:03.8506145+07:00||;True|2024-10-11T11:43:09.4446062+07:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>
